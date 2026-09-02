@@ -59,6 +59,9 @@ const els = {
   trip: document.getElementById('trip'),
   destination: document.getElementById('destination'),
   souvenir: document.getElementById('souvenir'),
+  menu: document.getElementById('menu'),
+  menuPanel: document.getElementById('menu-panel'),
+  menuWrap: document.querySelector('.menu-wrap'),
   mute: document.getElementById('mute'),
   saveFile: document.getElementById('save-file'),
   postcards: document.getElementById('postcards'),
@@ -127,6 +130,12 @@ function syncComfort() {
   els.reduceMotion.setAttribute('aria-pressed', String(game.reduceMotion));
   els.reduceMotion.textContent = game.reduceMotion ? 'Less motion on' : 'Less motion';
   audio.setReduceMotion(game.reduceMotion);
+}
+
+function setMenuOpen(open) {
+  document.body.classList.toggle('menu-open', open);
+  els.menu.setAttribute('aria-expanded', String(open));
+  els.menuPanel.hidden = !open;
 }
 
 function setPanelOpen(open) {
@@ -206,6 +215,11 @@ function closeModal() {
   els.modalActions.replaceChildren();
   els.modal.querySelector('.modal-card')?.classList.remove('gallery-card');
   els.drive.focus();
+}
+
+function closeMenuThen(fn) {
+  setMenuOpen(false);
+  fn();
 }
 
 function showModal({ title, bodyHtml, actions }) {
@@ -458,15 +472,24 @@ function openSaveModal() {
 }
 
 els.drive.addEventListener('click', drive);
+els.menu.addEventListener('click', (event) => {
+  event.stopPropagation();
+  setMenuOpen(els.menuPanel.hidden);
+});
 els.mute.addEventListener('click', toggleMute);
-els.postcards.addEventListener('click', openGallery);
+els.postcards.addEventListener('click', () => closeMenuThen(openGallery));
 els.largeType.addEventListener('click', toggleLargeType);
 els.reduceMotion.addEventListener('click', toggleReduceMotion);
 els.panelToggle.addEventListener('click', () => {
   setPanelOpen(!document.body.classList.contains('panel-open'));
 });
 els.prestige.addEventListener('click', confirmPrestige);
-els.saveFile.addEventListener('click', openSaveModal);
+els.saveFile.addEventListener('click', () => closeMenuThen(openSaveModal));
+document.addEventListener('pointerdown', (event) => {
+  if (els.menuPanel.hidden) return;
+  if (els.menuWrap.contains(event.target)) return;
+  setMenuOpen(false);
+});
 els.saveInput.addEventListener('change', async (event) => {
   const file = event.target.files && event.target.files[0];
   event.target.value = '';
@@ -484,6 +507,12 @@ window.addEventListener('keydown', (event) => {
   if (event.code === 'Escape' && !els.modal.hidden) {
     event.preventDefault();
     closeModal();
+    return;
+  }
+  if (event.code === 'Escape' && !els.menuPanel.hidden) {
+    event.preventDefault();
+    setMenuOpen(false);
+    els.menu.focus();
     return;
   }
   if (!els.modal.hidden) return;
@@ -521,6 +550,7 @@ if (window.matchMedia?.('(pointer: coarse)')?.matches && els.driveHint) {
 renderUpgrades();
 syncMute();
 syncComfort();
+setMenuOpen(params.get('menu') === '1');
 setPanelOpen(params.get('panel') === '1');
 syncHud();
 
