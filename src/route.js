@@ -253,8 +253,40 @@ export const THEMES = {
   },
 };
 
+const WEATHER_FOR = {
+  county: 'leaves',
+  pond: 'mist',
+  barn: 'leaves',
+  town: 'damp',
+  coast: 'haze',
+  harvest: 'leaves',
+  mountain: 'fog',
+  lake: 'mist',
+  desert: 'heat',
+  quiet: 'fog',
+};
+
+const NIGHT_FOR = {
+  county: { nightTop: 0x1c243c, nightBottom: 0x4a3844, nightFog: 0x241c28 },
+  pond: { nightTop: 0x142436, nightBottom: 0x2a3c52, nightFog: 0x182838 },
+  barn: { nightTop: 0x241828, nightBottom: 0x4a3040, nightFog: 0x2a1c24 },
+  town: { nightTop: 0x1a1c34, nightBottom: 0x3a3048, nightFog: 0x221c30 },
+  coast: { nightTop: 0x142436, nightBottom: 0x2c384c, nightFog: 0x1a2838 },
+  harvest: { nightTop: 0x241c28, nightBottom: 0x4a3838, nightFog: 0x2a201c },
+  mountain: { nightTop: 0x121828, nightBottom: 0x2a3044, nightFog: 0x161c28 },
+  lake: { nightTop: 0x101c30, nightBottom: 0x243848, nightFog: 0x142430 },
+  desert: { nightTop: 0x1c2438, nightBottom: 0x3a3040, nightFog: 0x241c28 },
+  quiet: { nightTop: 0x16141c, nightBottom: 0x2c2838, nightFog: 0x18141c },
+};
+
 export function themeFor(id) {
-  return THEMES[id] || THEMES.county;
+  const theme = THEMES[id] || THEMES.county;
+  const night = NIGHT_FOR[theme.id] || NIGHT_FOR.county;
+  return {
+    ...theme,
+    weather: WEATHER_FOR[theme.id] || 'clear',
+    ...night,
+  };
 }
 
 function lambert(color, extra = {}) {
@@ -484,12 +516,15 @@ function createDiner() {
   const signPost = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.4, 0.14), lambert(0x4a4038)));
   signPost.position.set(-4.4, 1.7, 1.6);
   diner.add(signPost);
-  const sign = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 0.7, 0.12),
-    new THREE.MeshLambertMaterial({ color: 0xc45c2a, emissive: 0x6a2010, emissiveIntensity: 0.35 }),
-  );
+  const signMat = new THREE.MeshLambertMaterial({
+    color: 0xc45c2a,
+    emissive: 0x6a2010,
+    emissiveIntensity: 0.35,
+  });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.7, 0.12), signMat);
   sign.position.set(-4.4, 3.3, 1.6);
   diner.add(sign);
+  diner.userData.neon = [windowMat, signMat];
   return diner;
 }
 
@@ -672,6 +707,112 @@ function createMailbox() {
   head.position.y = 1.12;
   box.add(head);
   return box;
+}
+
+export function createMailTruck() {
+  const truck = new THREE.Group();
+  const white = lambert(0xe8e4dc);
+  const blue = lambert(0x3a5a7a);
+  const dark = lambert(0x2a2622);
+  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(1.55, 1.35, 3.35), white));
+  body.position.y = 1.12;
+  truck.add(body);
+  const cab = addShadow(new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.72, 1.05), white));
+  cab.position.set(0, 1.72, -1.05);
+  truck.add(cab);
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.57, 0.22, 3.36), blue);
+  stripe.position.y = 1.05;
+  truck.add(stripe);
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.42, 0.06), lambert(0x243038));
+  glass.position.set(0, 1.78, -1.56);
+  truck.add(glass);
+  const bumper = new THREE.Mesh(new THREE.BoxGeometry(1.58, 0.12, 0.16), lambert(0x9a968c));
+  bumper.position.set(0, 0.48, -1.72);
+  truck.add(bumper);
+  const rubber = lambert(0x1a1816);
+  for (const [x, z] of [
+    [-0.72, -1.05],
+    [0.72, -1.05],
+    [-0.72, 1.15],
+    [0.72, 1.15],
+  ]) {
+    const wheel = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.2, 8), rubber));
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(x, 0.28, z);
+    truck.add(wheel);
+  }
+  truck.userData.kind = 'mail';
+  return truck;
+}
+
+export function createDeer() {
+  const deer = new THREE.Group();
+  const hide = lambert(0x8a6844);
+  const dark = lambert(0x5a4030);
+  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.48, 0.95), hide));
+  body.position.set(0, 0.95, 0);
+  deer.add(body);
+  const rump = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.28, 6, 5), hide));
+  rump.position.set(0, 0.98, 0.42);
+  rump.scale.set(0.9, 0.85, 1);
+  deer.add(rump);
+  const neck = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.42, 0.18), hide));
+  neck.position.set(0, 1.28, -0.42);
+  neck.rotation.x = 0.35;
+  deer.add(neck);
+  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.2, 0.38), hide));
+  head.position.set(0, 1.52, -0.62);
+  deer.add(head);
+  for (const x of [-0.08, 0.08]) {
+    const ear = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 4), hide));
+    ear.position.set(x, 1.68, -0.52);
+    ear.rotation.x = -0.4;
+    deer.add(ear);
+  }
+  for (const [x, z] of [
+    [-0.14, -0.32],
+    [0.14, -0.32],
+    [-0.14, 0.34],
+    [0.14, 0.34],
+  ]) {
+    const leg = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.72, 0.07), dark));
+    leg.position.set(x, 0.36, z);
+    deer.add(leg);
+  }
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.1, 0.08), lambert(0xe8dcc8));
+  tail.position.set(0, 1.12, 0.52);
+  deer.add(tail);
+  deer.userData.kind = 'deer';
+  deer.userData.head = head;
+  return deer;
+}
+
+export function createNeonSign() {
+  const sign = new THREE.Group();
+  const post = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.12, 3.6, 0.12), lambert(0x3a3834)));
+  post.position.y = 1.8;
+  sign.add(post);
+  const neonMat = new THREE.MeshLambertMaterial({
+    color: 0xe07050,
+    emissive: 0xc45c2a,
+    emissiveIntensity: 0.7,
+  });
+  const board = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.62, 0.1), neonMat);
+  board.position.set(0, 3.35, 0);
+  sign.add(board);
+  const eat = new THREE.Mesh(
+    new THREE.BoxGeometry(1.1, 0.28, 0.08),
+    new THREE.MeshLambertMaterial({
+      color: 0xf7e7c7,
+      emissive: 0xe8c090,
+      emissiveIntensity: 0.55,
+    }),
+  );
+  eat.position.set(0, 3.35, 0.08);
+  sign.add(eat);
+  sign.userData.neon = [neonMat, eat.material];
+  sign.userData.kind = 'neon';
+  return sign;
 }
 
 function createLampPost() {

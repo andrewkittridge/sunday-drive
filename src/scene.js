@@ -1,5 +1,12 @@
 import * as THREE from 'three';
-import { clearGroup, populateScenery, themeFor } from './route.js';
+import {
+  clearGroup,
+  createDeer,
+  createMailTruck,
+  createNeonSign,
+  populateScenery,
+  themeFor,
+} from './route.js';
 
 function canvasTexture(size, paint, wrap = 'repeat') {
   const canvas = document.createElement('canvas');
@@ -413,7 +420,8 @@ export function createWorld(canvas) {
       void main() {
         float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;
         float t = pow(max(h, 0.0), exponent);
-        gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);
+        vec3 col = mix(bottomColor, topColor, t);
+        gl_FragColor = vec4(col, 1.0);
       }
     `,
     side: THREE.BackSide,
@@ -440,6 +448,60 @@ export function createWorld(canvas) {
   );
   sun.add(sunGlow);
   scene.add(sun);
+
+  const moon = new THREE.Mesh(
+    new THREE.SphereGeometry(3.2, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xece6d4, toneMapped: false, fog: false }),
+  );
+  const moonGlow = new THREE.Mesh(
+    new THREE.SphereGeometry(5.1, 16, 16),
+    new THREE.MeshBasicMaterial({
+      color: 0xc8d0e0,
+      transparent: true,
+      opacity: 0.16,
+      toneMapped: false,
+      fog: false,
+      depthWrite: false,
+    }),
+  );
+  moon.add(moonGlow);
+  moon.visible = false;
+  scene.add(moon);
+
+  const starCount = 140;
+  const starPositions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i += 1) {
+    starPositions[i * 3] = (Math.random() - 0.5) * 210;
+    starPositions[i * 3 + 1] = 36 + Math.random() * 88;
+    starPositions[i * 3 + 2] = -30 - Math.random() * 150;
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+  const starTex = canvasTexture(
+    32,
+    (ctx, size) => {
+      const g = ctx.createRadialGradient(16, 16, 1, 16, 16, 15);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.4, 'rgba(230,236,248,0.7)');
+      g.addColorStop(1, 'rgba(230,236,248,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+    },
+    'clamp',
+  );
+  const starMat = new THREE.PointsMaterial({
+    color: 0xe8eef8,
+    map: starTex,
+    size: 2.1,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    fog: false,
+    sizeAttenuation: true,
+  });
+  const stars = new THREE.Points(starGeo, starMat);
+  stars.visible = false;
+  scene.add(stars);
 
   const grassMaps = {
     green: makeGrassTexture('#6f8f4a', '#5d7a3d', '#86a35b'),
@@ -521,20 +583,66 @@ export function createWorld(canvas) {
     addHill(-60, -150, 24, 0x7a8d5e),
   ];
 
-  const clouds = [];
-  const cloudMat = new THREE.MeshBasicMaterial({
+  const cloudMat = new THREE.MeshLambertMaterial({
     color: 0xf7ead2,
     transparent: true,
-    opacity: 0.48,
+    opacity: 0.58,
     depthWrite: false,
+    fog: false,
+    emissive: 0xf0d8b0,
+    emissiveIntensity: 0.12,
   });
-  for (let i = 0; i < 5; i += 1) {
-    const cloud = new THREE.Mesh(new THREE.SphereGeometry(2.8, 8, 6), cloudMat);
-    cloud.scale.set(1.35 + (i % 3) * 0.22, 0.3, 0.85);
-    cloud.position.set(-28 + i * 16, 28 + (i % 2) * 4, -52 - i * 13);
+  const puffGeo = new THREE.SphereGeometry(2.4, 9, 7);
+  const clouds = [];
+  const puffOffsets = [
+    [0, 0, 0, 1.25, 0.52, 1.0],
+    [2.2, 0.22, 0.25, 1.0, 0.46, 0.82],
+    [-2.0, 0.16, -0.18, 1.05, 0.48, 0.86],
+    [0.7, 0.5, 0.55, 0.78, 0.4, 0.66],
+    [-0.85, 0.4, 0.4, 0.72, 0.38, 0.62],
+    [1.15, 0.12, -0.55, 0.62, 0.34, 0.56],
+  ];
+  function createCloud() {
+    const group = new THREE.Group();
+    for (const [x, y, z, sx, sy, sz] of puffOffsets) {
+      const puff = new THREE.Mesh(puffGeo, cloudMat);
+      puff.position.set(x, y, z);
+      puff.scale.set(sx, sy, sz);
+      group.add(puff);
+    }
+    return group;
+  }
+  for (let i = 0; i < 7; i += 1) {
+    const cloud = createCloud();
+    const layer = i % 3;
+    cloud.position.set(-38 + i * 13.5, 24 + layer * 5.5 + (i % 2) * 2, -48 - i * 11 - layer * 8);
+    cloud.scale.setScalar(0.85 + (i % 4) * 0.18);
     scene.add(cloud);
     clouds.push(cloud);
   }
+
+  const weatherRoot = new THREE.Group();
+  scene.add(weatherRoot);
+  const eventRoot = new THREE.Group();
+  scene.add(eventRoot);
+  const weather = {
+    kind: 'clear',
+    leaves: [],
+    mist: [],
+    rain: [],
+    haze: [],
+    hazeTime: 0,
+  };
+  const eventState = {
+    kind: null,
+    age: 0,
+    life: 0,
+    cooldown: 28 + Math.random() * 22,
+    neonMats: [],
+    truck: null,
+    deer: null,
+    sign: null,
+  };
 
   const scenery = new THREE.Group();
   scene.add(scenery);
@@ -544,22 +652,314 @@ export function createWorld(canvas) {
 
   const dayTop = new THREE.Color();
   const duskTop = new THREE.Color();
+  const nightTop = new THREE.Color();
   const dayBottom = new THREE.Color();
   const duskBottom = new THREE.Color();
+  const nightBottom = new THREE.Color();
   const dayFog = new THREE.Color();
   const duskFog = new THREE.Color();
+  const nightFog = new THREE.Color();
   const dayHemi = new THREE.Color();
   const duskHemi = new THREE.Color();
   const daySun = new THREE.Color();
   const duskSun = new THREE.Color();
-  const clock = { travel: 0, time: 0 };
+  const cloudDay = new THREE.Color();
+  const clock = { travel: 0, time: 0, phase: null };
   let movers = [];
   let currentId = null;
   let look = { id: 'county', landmark: 'barn', extras: 'fence', grassMap: 'green' };
+  const tmpColor = new THREE.Color();
+  const moonFill = new THREE.Color(0x8890b0);
+  const nightCloud = new THREE.Color(0x6a7898);
+
+  function makeMistTexture() {
+    return canvasTexture(
+      256,
+      (ctx, size) => {
+        const g = ctx.createRadialGradient(128, 128, 8, 128, 128, 124);
+        g.addColorStop(0, 'rgba(255,255,255,0.5)');
+        g.addColorStop(0.55, 'rgba(255,255,255,0.16)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, size, size);
+      },
+      'clamp',
+    );
+  }
+
+  const mistTex = makeMistTexture();
+  const hazeMat = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      tint: { value: new THREE.Color('#f0c888') },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float time;
+      uniform vec3 tint;
+      varying vec2 vUv;
+      void main() {
+        float band = sin(vUv.y * 22.0 + time * 1.3) * 0.5 + 0.5;
+        float fade = smoothstep(0.0, 0.2, vUv.y) * (1.0 - smoothstep(0.65, 1.0, vUv.y));
+        float side = smoothstep(0.0, 0.18, vUv.x) * (1.0 - smoothstep(0.82, 1.0, vUv.x));
+        float a = (0.1 + band * 0.12) * fade * side;
+        gl_FragColor = vec4(tint, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    fog: false,
+    toneMapped: false,
+    side: THREE.DoubleSide,
+  });
 
   function recycleZ(object, speedDt, far, near) {
     object.position.z += speedDt;
     if (object.position.z > near) object.position.z -= far;
+  }
+
+  function gatherNeon(root) {
+    const mats = [];
+    root.traverse((node) => {
+      if (node.userData && Array.isArray(node.userData.neon)) {
+        mats.push(...node.userData.neon);
+      }
+    });
+    return mats;
+  }
+
+  function clearWeather() {
+    clearGroup(weatherRoot);
+    weather.kind = 'clear';
+    weather.leaves = [];
+    weather.mist = [];
+    weather.rain = [];
+    weather.haze = [];
+  }
+
+  function buildWeather(theme) {
+    clearWeather();
+    weather.kind = theme.weather || 'clear';
+    const kind = weather.kind;
+
+    if (kind === 'leaves') {
+      const colors = [0xc45c2a, 0xd4a24a, 0xb06a32, 0xe8a04a, 0xa24b3a, 0xc4a24a];
+      const leafShape = new THREE.Shape();
+      leafShape.moveTo(0, 0.22);
+      leafShape.bezierCurveTo(0.2, 0.14, 0.18, 0, 0, -0.18);
+      leafShape.bezierCurveTo(-0.18, 0, -0.2, 0.14, 0, 0.22);
+      const leafGeo = new THREE.ShapeGeometry(leafShape);
+      for (let i = 0; i < 20; i += 1) {
+        const leaf = new THREE.Mesh(
+          leafGeo,
+          new THREE.MeshBasicMaterial({
+            color: colors[i % colors.length],
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.88,
+            depthWrite: false,
+          }),
+        );
+        leaf.position.set((Math.random() - 0.5) * 14, 0.9 + Math.random() * 3.6, -4 - Math.random() * 36);
+        leaf.rotation.set(Math.random() * 0.6, Math.random() * Math.PI, Math.random());
+        leaf.scale.setScalar(0.85 + (i % 4) * 0.18);
+        leaf.userData.fall = 0.28 + Math.random() * 0.4;
+        leaf.userData.spin = 0.3 + Math.random() * 0.7;
+        leaf.userData.sway = 0.3 + Math.random() * 0.55;
+        leaf.userData.phase = Math.random() * Math.PI * 2;
+        weatherRoot.add(leaf);
+        weather.leaves.push(leaf);
+      }
+    }
+
+    if (kind === 'mist' || kind === 'fog' || kind === 'haze' || kind === 'damp') {
+      const tint =
+        kind === 'haze' ? 0xd8e0e8 : kind === 'fog' ? 0xc8d0d4 : kind === 'damp' ? 0xd0c8c0 : 0xd4e4dc;
+      const mistMat = new THREE.MeshBasicMaterial({
+        map: mistTex,
+        color: tint,
+        transparent: true,
+        opacity: kind === 'fog' ? 0.34 : kind === 'haze' ? 0.28 : 0.24,
+        depthWrite: false,
+        fog: false,
+        side: THREE.DoubleSide,
+      });
+      const count = kind === 'fog' ? 5 : 4;
+      for (let i = 0; i < count; i += 1) {
+        const sheet = new THREE.Mesh(new THREE.PlaneGeometry(28, 7.5), mistMat);
+        const side = i % 2 === 0 ? -1 : 1;
+        sheet.position.set(side * (8 + (i % 3) * 3.5), kind === 'fog' ? 3.4 : 1.8, -18 - i * 16);
+        sheet.rotation.y = side * 0.18;
+        sheet.userData.drift = (i % 2 === 0 ? 1 : -1) * (0.12 + i * 0.02);
+        weatherRoot.add(sheet);
+        weather.mist.push(sheet);
+      }
+    }
+
+    if (kind === 'damp') {
+      const streakMat = new THREE.MeshBasicMaterial({
+        color: 0xc8d4dc,
+        transparent: true,
+        opacity: 0.16,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      for (let i = 0; i < 12; i += 1) {
+        const drop = new THREE.Mesh(new THREE.PlaneGeometry(0.025, 0.42), streakMat);
+        drop.position.set((Math.random() - 0.5) * 12, 2 + Math.random() * 5, -8 - Math.random() * 28);
+        drop.userData.fall = 6 + Math.random() * 5;
+        weatherRoot.add(drop);
+        weather.rain.push(drop);
+      }
+    }
+
+    if (kind === 'heat') {
+      hazeMat.uniforms.tint.value.setHex(0xf0c888);
+      for (let i = 0; i < 3; i += 1) {
+        const plane = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 2.4), hazeMat);
+        plane.position.set(0, 0.7 + i * 0.15, -22 - i * 18);
+        plane.renderOrder = 2;
+        weatherRoot.add(plane);
+        weather.haze.push(plane);
+      }
+    }
+  }
+
+  function clearEvent() {
+    clearGroup(eventRoot);
+    eventState.kind = null;
+    eventState.age = 0;
+    eventState.life = 0;
+    eventState.truck = null;
+    eventState.deer = null;
+    eventState.sign = null;
+  }
+
+  function spawnEvent(kind) {
+    clearEvent();
+    const type = kind || ['mail', 'deer', 'neon'][Math.floor(Math.random() * 3)];
+    eventState.kind = type;
+    eventState.age = 0;
+
+    if (type === 'mail') {
+      const truck = createMailTruck();
+      truck.position.set(-2.45, 0.08, -22);
+      truck.rotation.y = Math.PI;
+      eventRoot.add(truck);
+      eventState.truck = truck;
+      eventState.life = 14;
+    } else if (type === 'deer') {
+      const deer = createDeer();
+      const side = Math.random() > 0.5 ? 1 : -1;
+      deer.scale.setScalar(1.45);
+      deer.position.set(side * 7.85, 0, -12.5);
+      deer.rotation.y = side > 0 ? -0.55 : Math.PI + 0.55;
+      deer.userData.side = side;
+      eventRoot.add(deer);
+      eventState.deer = deer;
+      eventState.life = 16;
+    } else {
+      const sign = createNeonSign();
+      const side = Math.random() > 0.45 ? 1 : -1;
+      sign.position.set(side * 7.4, 0, -26);
+      eventRoot.add(sign);
+      eventState.sign = sign;
+      eventState.life = 18;
+      eventState.neonMats = gatherNeon(scenery).concat(gatherNeon(eventRoot));
+      eventState.neonMats.forEach((mat) => {
+        if (mat) mat.userData.baseNeon = mat.emissiveIntensity;
+      });
+    }
+  }
+
+  function tickEvent(dt, speed, reduced) {
+    if (!eventState.kind) {
+      eventState.cooldown -= dt;
+      if (eventState.cooldown <= 0) {
+        spawnEvent();
+        eventState.cooldown = 78 + Math.random() * 64;
+      }
+      return;
+    }
+    eventState.age += dt;
+    const t = eventState.age;
+    if (eventState.truck) {
+      const rush = reduced ? 1.15 : 1.85;
+      eventState.truck.position.z += speed * rush * dt;
+      eventState.truck.position.y = 0.08;
+    }
+    if (eventState.deer) {
+      const deer = eventState.deer;
+      if (deer.userData.head) {
+        deer.userData.head.rotation.y = Math.sin(t * 0.7) * 0.18;
+      }
+      if (t > 7) {
+        const walk = reduced ? 0.18 : 0.55;
+        deer.position.x += deer.userData.side * walk * dt;
+        deer.position.z += 0.2 * dt;
+      }
+    }
+    if (eventState.kind === 'neon') {
+      const pulse = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 2.4));
+      const wink = t % 3.6 > 3.35 ? 0.12 : pulse;
+      eventState.neonMats.forEach((mat) => {
+        if (mat && mat.emissiveIntensity != null) mat.emissiveIntensity = wink;
+      });
+    }
+    if (eventState.age > eventState.life) {
+      if (eventState.kind === 'neon') {
+        gatherNeon(scenery).forEach((mat) => {
+          if (mat && mat.emissiveIntensity != null) {
+            mat.emissiveIntensity = mat.userData?.baseNeon ?? 0.35;
+          }
+        });
+      }
+      clearEvent();
+    }
+  }
+
+  function tickWeather(dt, speed, reduced) {
+    const motion = reduced ? 0.14 : 1;
+    weather.hazeTime += dt * motion;
+    if (weather.haze.length) hazeMat.uniforms.time.value = weather.hazeTime;
+
+    weather.leaves.forEach((leaf) => {
+      leaf.position.y -= leaf.userData.fall * dt * motion;
+      leaf.position.x += Math.sin(clock.time * leaf.userData.sway + leaf.userData.phase) * 0.35 * dt * motion;
+      leaf.position.z += speed * 0.35 * dt;
+      leaf.rotation.z += leaf.userData.spin * dt * motion;
+      leaf.rotation.x += 0.2 * dt * motion;
+      if (leaf.position.y < 0.12 || leaf.position.z > 8) {
+        leaf.position.set((Math.random() - 0.5) * 14, 3.2 + Math.random() * 2.4, -10 - Math.random() * 32);
+      }
+    });
+
+    weather.mist.forEach((sheet) => {
+      sheet.position.x += sheet.userData.drift * dt * motion;
+      sheet.position.z += speed * 0.28 * dt;
+      if (sheet.position.x > 18) sheet.position.x = -18;
+      if (sheet.position.x < -18) sheet.position.x = 18;
+      if (sheet.position.z > 6) sheet.position.z -= 70;
+    });
+
+    weather.rain.forEach((drop) => {
+      drop.position.y -= drop.userData.fall * dt * (reduced ? 0.2 : 1);
+      drop.position.z += speed * 0.5 * dt;
+      if (drop.position.y < 0.2 || drop.position.z > 6) {
+        drop.position.set((Math.random() - 0.5) * 14, 6 + Math.random() * 4, -8 - Math.random() * 32);
+      }
+    });
+
+    weather.haze.forEach((plane, i) => {
+      plane.position.z += speed * 0.2 * dt;
+      if (plane.position.z > -8) plane.position.z = -22 - i * 18;
+    });
   }
 
   function applyRoute(id) {
@@ -571,6 +971,7 @@ export function createWorld(canvas) {
       landmark: theme.landmark,
       extras: theme.extras,
       grassMap: theme.grassMap,
+      weather: theme.weather,
       grassHex: theme.grass.toString(16).padStart(6, '0'),
       skyTopHex: theme.skyTop.toString(16).padStart(6, '0'),
       fogHex: theme.fog.toString(16).padStart(6, '0'),
@@ -580,15 +981,19 @@ export function createWorld(canvas) {
     grass.material.color.setHex(0xffffff);
     grass.material.needsUpdate = true;
     shoulderMat.color.setHex(theme.shoulder);
-    cloudMat.color.setHex(theme.cloud);
+    cloudDay.setHex(theme.cloud);
+    cloudMat.color.copy(cloudDay);
     hemi.groundColor.setHex(theme.hemiGround);
 
     dayTop.setHex(theme.skyTop);
     duskTop.setHex(theme.duskTop);
+    nightTop.setHex(theme.nightTop);
     dayBottom.setHex(theme.skyBottom);
     duskBottom.setHex(theme.duskBottom);
+    nightBottom.setHex(theme.nightBottom);
     dayFog.setHex(theme.fog);
     duskFog.setHex(theme.duskFog);
+    nightFog.setHex(theme.nightFog);
     dayHemi.setHex(theme.hemiSky);
     duskHemi.setHex(theme.hemiDusk);
     daySun.setHex(theme.sunDay);
@@ -604,6 +1009,9 @@ export function createWorld(canvas) {
     clearGroup(scenery);
     const built = populateScenery(scenery, theme);
     movers = built.movers;
+    eventState.neonMats = gatherNeon(scenery);
+    buildWeather(theme);
+    clearEvent();
   }
 
   applyRoute('county');
@@ -620,8 +1028,9 @@ export function createWorld(canvas) {
     const destId = game.destination?.id || 'county';
     if (destId !== currentId) applyRoute(destId);
 
+    const reduced = Boolean(game.reduceMotion);
     clock.time += dt;
-    const impulse = game.driveImpulse;
+    const impulse = reduced ? game.driveImpulse * 0.15 : game.driveImpulse;
     const speed = 5.5 + game.passiveRate * 0.28 + impulse * 16;
     clock.travel += speed * dt;
 
@@ -630,35 +1039,57 @@ export function createWorld(canvas) {
       tex.offset.y = (clock.travel * 0.012) % 1;
     });
 
-    const cycle = (0.1 + clock.time * 0.022 + game.totalMiles * 0.00018) % 1;
-    const sunAngle = cycle * Math.PI;
-    const sunHeight = Math.sin(sunAngle);
-    const dusk = THREE.MathUtils.smoothstep(0.58, 0.14, sunHeight);
-    skyMat.uniforms.topColor.value.copy(dayTop).lerp(duskTop, dusk * 0.36);
-    skyMat.uniforms.bottomColor.value.copy(dayBottom).lerp(duskBottom, dusk);
-    const fog = dayFog.clone().lerp(duskFog, dusk);
-    scene.fog.color.copy(fog);
-    scene.background.copy(fog);
-    scene.fog.near = 38 + dusk * 8;
-    scene.fog.far = 168 + dusk * 18;
-    hemi.color.copy(dayHemi).lerp(duskHemi, dusk);
-    hemi.intensity = 0.72 + (1 - dusk) * 0.22;
-    sunLight.intensity = 1.72 - dusk * 0.55;
-    sunLight.color.copy(daySun).lerp(duskSun, dusk);
-    fill.intensity = 0.22 + dusk * 0.12;
-    renderer.toneMappingExposure = 1.16 - dusk * 0.18;
-    car.userData.lights.emissiveIntensity = 0.2 + dusk * 1.65;
-    car.userData.tails.emissiveIntensity = 0.18 + dusk * 0.6;
-    const beam = dusk * 48;
+    const phase =
+      clock.phase != null
+        ? clock.phase
+        : (0.458 + clock.time * 0.0046 + (game.totalMiles || 0) * 0.00005) % 1;
+    const altitude = Math.sin(phase * Math.PI * 2);
+    const azimuth = phase * Math.PI * 2;
+    const dusk = THREE.MathUtils.smoothstep(0.42, 0.05, altitude);
+    const night = THREE.MathUtils.smoothstep(0.1, -0.16, altitude);
+
+    skyMat.uniforms.topColor.value.copy(dayTop).lerp(duskTop, dusk * 0.42).lerp(nightTop, night);
+    skyMat.uniforms.bottomColor.value.copy(dayBottom).lerp(duskBottom, dusk).lerp(nightBottom, night);
+    skyMat.uniforms.exponent.value = 0.68 + night * 0.55;
+    tmpColor.copy(dayFog).lerp(duskFog, dusk).lerp(nightFog, night);
+    scene.fog.color.copy(tmpColor);
+    scene.background.copy(tmpColor);
+    scene.fog.near = 36 + dusk * 6 - night * 4;
+    scene.fog.far = 168 + dusk * 12 + night * 10;
+    hemi.color.copy(dayHemi).lerp(duskHemi, dusk).lerp(nightTop, night * 0.65);
+    hemi.intensity = 0.74 + (1 - dusk) * 0.2 - night * 0.3;
+    sunLight.intensity = night > 0.55 ? 0.24 : Math.max(0.16, 1.72 - dusk * 0.7 - night * 1.15);
+    sunLight.color.copy(daySun).lerp(duskSun, dusk).lerp(moonFill, night);
+    fill.intensity = 0.2 + dusk * 0.1 + night * 0.08;
+    renderer.toneMappingExposure = 1.16 - dusk * 0.16 - night * 0.32;
+    car.userData.lights.emissiveIntensity = 0.2 + dusk * 1.2 + night * 1.85;
+    car.userData.tails.emissiveIntensity = 0.18 + dusk * 0.5 + night * 0.85;
+    const beam = dusk * 36 + night * 58;
     car.userData.spots.forEach((spot) => {
       spot.intensity = beam;
     });
-    car.userData.kiss.intensity = dusk * 7.5;
+    car.userData.kiss.intensity = dusk * 6 + night * 9;
 
-    sun.position.set(Math.cos(sunAngle) * 44, 3.4 + sunHeight * 24, -88);
-    sunGlow.material.opacity = 0.16 + dusk * 0.12;
-    const lightPos = sun.position.clone().normalize().multiplyScalar(58);
-    lightPos.y = Math.max(14, lightPos.y);
+    sun.position.set(-Math.cos(azimuth) * 52, altitude * 26, -90);
+    sun.visible = altitude > -0.08;
+    sunGlow.material.opacity = 0.16 + dusk * 0.12 - night * 0.1;
+    moon.position.set(Math.cos(azimuth) * 50, Math.max(0.2, -altitude) * 26, -86);
+    moon.visible = night > 0.12;
+    moonGlow.material.opacity = 0.08 + night * 0.14;
+    stars.visible = night > 0.08;
+    starMat.opacity = night * 0.85;
+    stars.rotation.y = phase * 0.15;
+
+    cloudMat.color.copy(cloudDay).lerp(duskSun, dusk * 0.28).lerp(nightCloud, night);
+    cloudMat.emissive.copy(cloudMat.color);
+    cloudMat.emissiveIntensity = 0.1 + dusk * 0.08 + night * 0.12;
+    cloudMat.opacity = 0.62 - night * 0.08;
+    grass.material.color.setRGB(1 - night * 0.45, 1 - night * 0.42, 1 - night * 0.32);
+
+    const lightPos = sun.visible
+      ? sun.position.clone().normalize().multiplyScalar(58)
+      : moon.position.clone().normalize().multiplyScalar(48);
+    lightPos.y = Math.max(night > 0.5 ? 10 : 14, lightPos.y);
     sunLight.position.copy(lightPos);
 
     const move = speed * dt;
@@ -666,20 +1097,26 @@ export function createWorld(canvas) {
       recycleZ(item.obj, move * item.speed, item.far, item.near);
     });
     hills.forEach((hill) => recycleZ(hill, move * 0.22, 90, 20));
+    const cloudDrift = reduced ? 0.05 : 0.22;
     clouds.forEach((cloud, i) => {
-      cloud.position.x += dt * (0.28 + i * 0.04);
-      if (cloud.position.x > 55) cloud.position.x = -55;
+      cloud.position.x += dt * (cloudDrift + i * 0.03 * (reduced ? 0.2 : 1));
+      if (cloud.position.x > 58) cloud.position.x = -58;
     });
 
-    const bob = Math.sin(clock.time * 6.2) * 0.01 * (0.35 + impulse * 0.45);
+    tickWeather(dt, speed, reduced);
+    tickEvent(dt, speed, reduced);
+
+    const sway = reduced ? 0 : 1;
+    const bob = Math.sin(clock.time * 6.2) * 0.01 * (0.35 + impulse * 0.45) * sway;
     car.position.y = bob;
-    car.rotation.x = -impulse * 0.018 + Math.sin(clock.time * 5.1) * 0.005;
-    car.rotation.z = Math.sin(clock.time * 1.8) * 0.008;
+    car.rotation.x = -impulse * 0.018 + Math.sin(clock.time * 5.1) * 0.005 * sway;
+    car.rotation.z = Math.sin(clock.time * 1.8) * 0.008 * sway;
     car.userData.wheels.forEach((wheel) => {
       wheel.rotation.x += speed * dt * 2.4;
     });
 
-    camTarget.set(0.76, 2.2 + impulse * 0.05, 8.35 + impulse * 0.22);
+    const camNudge = reduced ? 0 : 1;
+    camTarget.set(0.76, 2.2 + impulse * 0.05 * camNudge, 8.35 + impulse * 0.22 * camNudge);
     lookTarget.set(0.04, 0.56, -13.4);
     const smooth = 1 - Math.pow(0.02, dt);
     camCurrent.lerp(camTarget, smooth);
@@ -698,7 +1135,28 @@ export function createWorld(canvas) {
 
   function setTime(t) {
     clock.time = t;
+    clock.phase = null;
   }
 
-  return { update, render, renderer, applyRoute, getLook, setTime };
+  function setPhase(p) {
+    const n = Number(p);
+    if (!Number.isFinite(n)) return;
+    clock.phase = ((n % 1) + 1) % 1;
+  }
+
+  function forceEvent(kind) {
+    spawnEvent(kind);
+    eventState.cooldown = 90;
+  }
+
+  return {
+    update,
+    render,
+    renderer,
+    applyRoute,
+    getLook,
+    setTime,
+    setPhase,
+    forceEvent,
+  };
 }
