@@ -1,109 +1,17 @@
-const TAPES = {
-  county: {
-    root: 62,
-    chords: [
-      [0, 4, 7, 11],
-      [5, 9, 12],
-      [0, 4, 7, 12],
-      [7, 11, 14],
-    ],
-    melody: [7, 4, 9, 7, 12, 9, 4, 0],
-  },
-  pond: {
-    root: 64,
-    chords: [
-      [0, 3, 7, 10],
-      [5, 8, 12],
-      [7, 10, 14],
-      [0, 3, 7],
-    ],
-    melody: [7, 10, 5, 3, 12, 7, 5, 0],
-  },
-  barn: {
-    root: 60,
-    chords: [
-      [0, 4, 7],
-      [5, 9, 12],
-      [0, 4, 9],
-      [7, 11, 14],
-    ],
-    melody: [4, 7, 12, 7, 9, 4, 0, 7],
-  },
-  town: {
-    root: 65,
-    chords: [
-      [0, 4, 7, 9],
-      [2, 5, 9],
-      [5, 9, 12],
-      [0, 4, 7],
-    ],
-    melody: [4, 9, 7, 12, 9, 5, 4, 0],
-  },
-  coast: {
-    root: 69,
-    chords: [
-      [0, 4, 7, 11],
-      [4, 7, 11],
-      [5, 9, 12],
-      [0, 7, 12],
-    ],
-    melody: [12, 11, 7, 4, 9, 7, 4, 0],
-  },
-  harvest: {
-    root: 58,
-    chords: [
-      [0, 4, 7],
-      [5, 9, 12],
-      [3, 7, 10],
-      [0, 4, 7, 12],
-    ],
-    melody: [7, 12, 9, 4, 7, 5, 0, 4],
-  },
-  mountain: {
-    root: 64,
-    chords: [
-      [0, 3, 7],
-      [5, 8, 12],
-      [7, 10, 14],
-      [0, 3, 10],
-    ],
-    melody: [7, 3, 10, 7, 12, 8, 3, 0],
-  },
-  lake: {
-    root: 67,
-    chords: [
-      [0, 4, 7, 12],
-      [4, 7, 11],
-      [5, 9, 12],
-      [0, 4, 9],
-    ],
-    melody: [4, 7, 12, 11, 7, 4, 9, 0],
-  },
-  desert: {
-    root: 62,
-    chords: [
-      [0, 3, 7],
-      [5, 8, 12],
-      [0, 7, 10],
-      [3, 7, 12],
-    ],
-    melody: [0, 3, 7, 5, 10, 7, 3, 0],
-  },
-  quiet: {
-    root: 60,
-    chords: [
-      [0, 4, 7],
-      [0, 5, 9],
-      [0, 4, 12],
-      [0, 7, 11],
-    ],
-    melody: [12, 7, 4, 0, 7, 4, 12, 7],
-  },
+const BEDS = {
+  lofi: { url: '/audio/lofi.mp3' },
+  cabin: { url: '/audio/cabin.mp3' },
+  road: { url: '/audio/road.mp3' },
 };
 
-function midi(n) {
-  return 440 * Math.pow(2, (n - 69) / 12);
-}
+const MASTER_DEFAULT = 0.2;
+const MUSIC_GAIN = [0.46, 0.58, 0.68, 0.78];
+const MUSIC_CUTOFF = [3800, 5200, 7000, 8800];
+const CABIN_GAIN = 0.18;
+const ROAD_IDLE = 0.055;
+const ROAD_DRIVE = 0.05;
+const FALLBACK_RUMBLE = 0.045;
+const FALLBACK_WIND = 0.016;
 
 export function mixtapeTier(level) {
   const n = Number(level) || 0;
@@ -113,100 +21,73 @@ export function mixtapeTier(level) {
   return 3;
 }
 
-function renderTape(ctx, destId, tier) {
-  const spec = TAPES[destId] || TAPES.county;
-  const duration = 8;
-  const fade = 0.18;
-  const sr = ctx.sampleRate;
-  const total = Math.floor(sr * (duration + fade));
-  const loopLen = Math.floor(sr * duration);
-  const Ltmp = new Float32Array(total);
-  const Rtmp = new Float32Array(total);
-  const padGain = [0, 0.07, 0.1, 0.12][tier];
-  const melodyGain = [0, 0, 0.045, 0.06][tier];
-  const shimmerGain = [0, 0, 0, 0.03][tier];
-  const hiss = 0.008 + tier * 0.002;
+function midi(n) {
+  return 440 * Math.pow(2, (n - 69) / 12);
+}
 
-  for (let i = 0; i < total; i += 1) {
-    const t = i / sr;
-    const chordIndex = Math.floor((t / duration) * spec.chords.length) % spec.chords.length;
-    const chord = spec.chords[chordIndex];
-    const trem = 0.88 + 0.12 * Math.sin((2 * Math.PI * t) / duration);
-    let s = 0;
-    if (padGain) {
-      for (let c = 0; c < chord.length; c += 1) {
-        const freq = midi(spec.root + chord[c]);
-        const wow = 1 + 0.0025 * Math.sin(2 * Math.PI * (0.12 + c * 0.03) * t);
-        s += Math.sin(2 * Math.PI * freq * wow * t) * padGain * trem;
-        s += Math.sin(2 * Math.PI * freq * 0.5 * wow * t) * padGain * 0.35 * trem;
-      }
+function decodeAudio(ctx, data) {
+  return new Promise((resolve, reject) => {
+    const copy = data.slice(0);
+    let settled = false;
+    const ok = (buffer) => {
+      if (settled) return;
+      settled = true;
+      resolve(buffer);
+    };
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      reject(err || new Error('decodeAudioData failed'));
+    };
+    try {
+      const ret = ctx.decodeAudioData(copy, ok, fail);
+      if (ret && typeof ret.then === 'function') ret.then(ok, fail);
+    } catch (err) {
+      fail(err);
     }
-    if (melodyGain) {
-      const noteIndex = Math.floor(t) % spec.melody.length;
-      const noteStart = Math.floor(t);
-      const u = t - noteStart;
-      if (u < 0.72) {
-        const freq = midi(spec.root + spec.melody[noteIndex]);
-        const env = Math.min(u / 0.03, 1) * Math.exp(-u * 2.4);
-        const vib = freq * (1 + 0.0018 * Math.sin(2 * Math.PI * 5 * t));
-        s +=
-          melodyGain *
-          env *
-          (0.7 * Math.sin(2 * Math.PI * vib * t) + 0.22 * Math.sin(2 * Math.PI * vib * 2 * t));
-      }
-    }
-    if (shimmerGain) {
-      const freq = midi(spec.root + 19);
-      s += Math.sin(2 * Math.PI * freq * t) * shimmerGain * (0.5 + 0.5 * Math.sin(t * 0.7));
-    }
-    s += (Math.random() * 2 - 1) * hiss;
-    s = Math.tanh(s * 1.4);
-    Ltmp[i] = s;
-    Rtmp[i] = s * 0.94 + (Math.random() * 2 - 1) * hiss * 0.4;
-  }
+  });
+}
 
-  const buffer = ctx.createBuffer(2, loopLen, sr);
-  const L = buffer.getChannelData(0);
-  const R = buffer.getChannelData(1);
-  const fadeN = Math.floor(sr * fade);
-  for (let i = 0; i < loopLen; i += 1) {
-    if (i < fadeN) {
-      const k = i / fadeN;
-      L[i] = Ltmp[i] * k + Ltmp[loopLen + i] * (1 - k);
-      R[i] = Rtmp[i] * k + Rtmp[loopLen + i] * (1 - k);
-    } else {
-      L[i] = Ltmp[i];
-      R[i] = Rtmp[i];
-    }
-  }
-  return buffer;
+function rampGain(node, value, seconds = 0.08) {
+  if (!node) return;
+  const now = node.context.currentTime;
+  node.gain.cancelScheduledValues(now);
+  node.gain.setValueAtTime(node.gain.value, now);
+  node.gain.linearRampToValueAtTime(Math.max(0, value), now + seconds);
 }
 
 export class Ambience {
   constructor() {
     this.muted = false;
+    this.reduceMotion = false;
     this.ctx = null;
     this.master = null;
     this.started = false;
-    this.liveGain = 0.26;
-    this.dest = null;
-    this.tier = null;
-    this.cache = new Map();
-    this.musicSource = null;
-    this.musicGain = null;
-    this.rumbleGain = null;
-    this.windGain = null;
+    this.liveGain = MASTER_DEFAULT;
+    this.loading = null;
+    this.buffers = new Map();
+    this.sources = {};
+    this.gains = {};
+    this.musicFilter = null;
+    this.fallback = null;
+    this.usingFallback = false;
+    this.bedsReady = false;
     this.lastDrive = 0;
+    this.tier = 0;
   }
 
   setMuted(muted) {
     this.muted = muted;
-    if (this.master && this.ctx) {
-      const now = this.ctx.currentTime;
-      this.master.gain.cancelScheduledValues(now);
-      this.master.gain.setValueAtTime(this.master.gain.value, now);
-      this.master.gain.linearRampToValueAtTime(muted ? 0 : this.liveGain, now + 0.07);
-    }
+    this.applyMaster();
+  }
+
+  setReduceMotion(on) {
+    this.reduceMotion = Boolean(on);
+  }
+
+  applyMaster() {
+    if (!this.master || !this.ctx) return;
+    rampGain(this.master, this.muted ? 0 : this.liveGain, 0.07);
   }
 
   async resume() {
@@ -219,104 +100,78 @@ export class Ambience {
         return;
       }
     }
-    this.setMuted(this.muted);
+    this.applyMaster();
+    if (this.ctx.state === 'running') this.ensureBeds();
   }
 
   sync(game) {
     if (!this.started || !this.ctx) return;
-    const dest = game.destination?.id || 'county';
+    this.reduceMotion = Boolean(game.reduceMotion);
     const tier = mixtapeTier(game.levels?.mixtape);
-    const impulse = game.driveImpulse || 0;
-    const now = this.ctx.currentTime;
-    if (this.rumbleGain) {
-      this.rumbleGain.gain.setTargetAtTime(0.07 + impulse * 0.05, now, 0.18);
-    }
-    if (this.windGain) {
-      this.windGain.gain.setTargetAtTime(0.024 + impulse * 0.012, now, 0.22);
-    }
-    if (dest === this.dest && tier === this.tier) return;
-    this.playTape(dest, tier);
-  }
-
-  playTape(destId, tier) {
-    if (!this.ctx || !this.musicBus) return;
-    this.dest = destId;
     this.tier = tier;
-    const key = `${destId}:${tier}`;
-    let buffer = this.cache.get(key);
-    if (!buffer) {
-      buffer = renderTape(this.ctx, destId, tier);
-      this.cache.set(key, buffer);
-    }
-
+    const impulse = this.reduceMotion ? 0 : game.driveImpulse || 0;
     const now = this.ctx.currentTime;
-    const incoming = this.ctx.createBufferSource();
-    incoming.buffer = buffer;
-    incoming.loop = true;
-    const gain = this.ctx.createGain();
-    gain.gain.value = 0;
-    incoming.connect(gain);
-    gain.connect(this.musicBus);
-    incoming.start();
-    const target = tier === 0 ? 0.45 : 1;
-    gain.gain.linearRampToValueAtTime(target, now + 1.1);
 
-    if (this.musicSource) {
-      const oldSource = this.musicSource;
-      const oldGain = this.musicGain;
-      oldGain.gain.cancelScheduledValues(now);
-      oldGain.gain.setValueAtTime(oldGain.gain.value, now);
-      oldGain.gain.linearRampToValueAtTime(0, now + 1.1);
-      try {
-        oldSource.stop(now + 1.2);
-      } catch {
-        // already stopped
-      }
+    if (this.gains.lofi) {
+      this.gains.lofi.gain.setTargetAtTime(MUSIC_GAIN[tier], now, 0.35);
     }
-    this.musicSource = incoming;
-    this.musicGain = gain;
+    if (this.musicFilter) {
+      this.musicFilter.frequency.setTargetAtTime(MUSIC_CUTOFF[tier], now, 0.45);
+    }
+    if (this.gains.cabin) {
+      this.gains.cabin.gain.setTargetAtTime(CABIN_GAIN, now, 0.25);
+    }
+    if (this.gains.road) {
+      const road = this.reduceMotion ? ROAD_IDLE : ROAD_IDLE + impulse * ROAD_DRIVE;
+      this.gains.road.gain.setTargetAtTime(road, now, 0.28);
+    }
+    if (this.fallback) {
+      const rumble = this.bedsReady ? 0 : FALLBACK_RUMBLE + impulse * 0.02;
+      const wind = this.bedsReady ? 0 : FALLBACK_WIND + impulse * 0.008;
+      this.fallback.rumble.gain.setTargetAtTime(rumble, now, 0.2);
+      this.fallback.wind.gain.setTargetAtTime(wind, now, 0.22);
+    }
   }
 
   driveClick() {
-    if (!this.ctx || this.muted || this.ctx.state !== 'running') return;
+    if (!this.ctx || this.muted || this.reduceMotion || this.ctx.state !== 'running') return;
     const t = this.ctx.currentTime;
-    if (t - this.lastDrive < 0.12) return;
+    if (t - this.lastDrive < 0.16) return;
     this.lastDrive = t;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(110, t);
-    osc.frequency.exponentialRampToValueAtTime(62, t + 0.16);
+    osc.frequency.setValueAtTime(96, t);
+    osc.frequency.exponentialRampToValueAtTime(54, t + 0.18);
     filter.type = 'lowpass';
-    filter.frequency.value = 420;
+    filter.frequency.value = 280;
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.045, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+    gain.gain.exponentialRampToValueAtTime(0.028, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(this.master);
     osc.start(t);
-    osc.stop(t + 0.22);
+    osc.stop(t + 0.24);
   }
 
   buyChime() {
-    if (!this.ctx || this.muted || this.ctx.state !== 'running') return;
+    if (!this.ctx || this.muted || this.reduceMotion || this.ctx.state !== 'running') return;
     const t = this.ctx.currentTime;
-    const spec = TAPES[this.dest] || TAPES.county;
-    const freqs = [midi(spec.root + 12), midi(spec.root + 16)];
+    const freqs = [midi(64), midi(71)];
     freqs.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, t + i * 0.07);
-      gain.gain.setValueAtTime(0.0001, t + i * 0.07);
-      gain.gain.exponentialRampToValueAtTime(0.05, t + i * 0.07 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.07 + 0.36);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + i * 0.08);
+      gain.gain.setValueAtTime(0.0001, t + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.03, t + i * 0.08 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.08 + 0.4);
       osc.connect(gain);
       gain.connect(this.master);
-      osc.start(t + i * 0.07);
-      osc.stop(t + i * 0.07 + 0.4);
+      osc.start(t + i * 0.08);
+      osc.stop(t + i * 0.08 + 0.44);
     });
   }
 
@@ -328,44 +183,44 @@ export class Ambience {
     this.master.gain.value = this.muted ? 0 : this.liveGain;
 
     const compressor = this.ctx.createDynamicsCompressor();
-    compressor.threshold.value = -18;
+    compressor.threshold.value = -20;
     compressor.knee.value = 18;
-    compressor.ratio.value = 2.4;
-    compressor.attack.value = 0.03;
-    compressor.release.value = 0.25;
+    compressor.ratio.value = 2.2;
+    compressor.attack.value = 0.04;
+    compressor.release.value = 0.28;
     this.master.connect(compressor);
     compressor.connect(this.ctx.destination);
 
-    this.musicBus = this.ctx.createGain();
-    this.musicBus.gain.value = 0.85;
-    this.musicBus.connect(this.master);
+    this.musicFilter = this.ctx.createBiquadFilter();
+    this.musicFilter.type = 'lowpass';
+    this.musicFilter.frequency.value = MUSIC_CUTOFF[0];
+    this.musicFilter.Q.value = 0.55;
+    this.musicFilter.connect(this.master);
+
+    this.startFallback();
+    this.started = true;
+  }
+
+  startFallback() {
+    if (!this.ctx || this.fallback) return;
 
     const rumble = this.ctx.createOscillator();
     rumble.type = 'sine';
-    rumble.frequency.value = 58;
+    rumble.frequency.value = 52;
     const rumble2 = this.ctx.createOscillator();
     rumble2.type = 'triangle';
-    rumble2.frequency.value = 87;
+    rumble2.frequency.value = 78;
     const rumbleGain = this.ctx.createGain();
-    rumbleGain.gain.value = 0.07;
-    this.rumbleGain = rumbleGain;
+    rumbleGain.gain.value = FALLBACK_RUMBLE;
     const rumbleFilter = this.ctx.createBiquadFilter();
     rumbleFilter.type = 'lowpass';
-    rumbleFilter.frequency.value = 220;
+    rumbleFilter.frequency.value = 180;
     rumble.connect(rumbleGain);
     rumble2.connect(rumbleGain);
     rumbleGain.connect(rumbleFilter);
     rumbleFilter.connect(this.master);
     rumble.start();
     rumble2.start();
-
-    const lfo = this.ctx.createOscillator();
-    lfo.frequency.value = 0.08;
-    const lfoGain = this.ctx.createGain();
-    lfoGain.gain.value = 10;
-    lfo.connect(lfoGain);
-    lfoGain.connect(rumbleFilter.frequency);
-    lfo.start();
 
     const bufferSize = 2 * this.ctx.sampleRate;
     const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -381,17 +236,84 @@ export class Ambience {
     noise.loop = true;
     const wind = this.ctx.createBiquadFilter();
     wind.type = 'bandpass';
-    wind.frequency.value = 620;
-    wind.Q.value = 0.55;
+    wind.frequency.value = 540;
+    wind.Q.value = 0.5;
     const windGain = this.ctx.createGain();
-    windGain.gain.value = 0.024;
-    this.windGain = windGain;
+    windGain.gain.value = FALLBACK_WIND;
     noise.connect(wind);
     wind.connect(windGain);
     windGain.connect(this.master);
     noise.start();
 
-    this.started = true;
-    this.playTape(this.dest || 'county', this.tier || 0);
+    this.fallback = { rumble: rumbleGain, wind: windGain };
+    this.usingFallback = true;
+  }
+
+  ensureBeds() {
+    if (this.loading || this.bedsReady) return;
+    this.loading = this.loadBeds().catch(() => {
+      this.loading = null;
+    });
+  }
+
+  async loadBeds() {
+    if (!this.ctx) return;
+    const results = await Promise.all(
+      Object.entries(BEDS).map(async ([id, spec]) => {
+        try {
+          const res = await fetch(spec.url);
+          if (!res.ok) throw new Error(`missing ${spec.url}`);
+          const raw = await res.arrayBuffer();
+          const buffer = await decodeAudio(this.ctx, raw);
+          return [id, buffer];
+        } catch {
+          return [id, null];
+        }
+      }),
+    );
+
+    let any = false;
+    for (const [id, buffer] of results) {
+      if (!buffer) continue;
+      this.buffers.set(id, buffer);
+      this.startBed(id, buffer);
+      any = true;
+    }
+
+    if (!any) {
+      this.loading = null;
+      return;
+    }
+
+    this.bedsReady = true;
+    if (this.fallback && this.sources.cabin) {
+      this.usingFallback = false;
+      rampGain(this.fallback.rumble, 0, 1.2);
+      rampGain(this.fallback.wind, 0, 1.2);
+    }
+  }
+
+  startBed(id, buffer) {
+    if (!this.ctx || this.sources[id]) return;
+    const source = this.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    const gain = this.ctx.createGain();
+    gain.gain.value = 0;
+    source.connect(gain);
+    if (id === 'lofi') {
+      gain.connect(this.musicFilter);
+      gain.gain.value = MUSIC_GAIN[this.tier] * 0.001;
+      rampGain(gain, MUSIC_GAIN[this.tier], 1.6);
+    } else if (id === 'cabin') {
+      gain.connect(this.master);
+      rampGain(gain, CABIN_GAIN, 1.4);
+    } else {
+      gain.connect(this.master);
+      rampGain(gain, ROAD_IDLE, 1.6);
+    }
+    source.start();
+    this.sources[id] = source;
+    this.gains[id] = gain;
   }
 }
