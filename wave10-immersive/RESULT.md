@@ -4,7 +4,8 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-Pending — draft against `main` @ `629db6e` (wave 9). Head: `wave/10-immersive`.
+https://github.com/andrewkittridge/sunday-drive/pull/12 (draft)  
+Base: `main` @ `629db6e` (wave 9). Head: `wave/10-immersive`.
 
 ## Thesis
 
