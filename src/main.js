@@ -132,7 +132,7 @@ function syncComfort() {
 function setPanelOpen(open) {
   document.body.classList.toggle('panel-open', open);
   els.panelToggle.setAttribute('aria-expanded', String(open));
-  els.panelToggle.textContent = open ? 'The car · hide' : 'The car';
+  els.panelToggle.textContent = open ? 'Hide' : 'The car';
 }
 
 function syncHud() {

@@ -559,13 +559,22 @@ input {
 
 @media (max-width: 900px) {
   #hud {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto auto auto;
+    grid-template-areas:
+      "topbar"
+      "scene"
+      "panel"
+      "toggle"
+      "stage";
+    gap: 0.45rem;
     overflow: hidden;
+    align-content: stretch;
   }
 
   .topbar {
+    grid-area: topbar;
     flex-shrink: 0;
     align-items: flex-start;
   }
@@ -588,27 +597,38 @@ input {
   }
 
   .stage {
-    order: 5;
-    padding-bottom: 0.2rem;
+    grid-area: stage;
+    order: 0;
+    padding-bottom: 0;
     max-width: none;
+    flex-shrink: 0;
+    min-height: 0;
+  }
+
+  .drive-wrap {
+    margin-top: 0.55rem;
     flex-shrink: 0;
   }
 
   .panel-toggle {
     display: block;
-    order: 4;
+    grid-area: toggle;
+    order: 0;
     width: 100%;
     pointer-events: auto;
-    margin-top: auto;
+    margin-top: 0;
+    min-height: 48px;
   }
 
   .panel {
     display: none;
-    order: 3;
-    max-height: min(22vh, 10.5rem);
+    grid-area: panel;
+    order: 0;
+    max-height: min(16vh, 7.25rem);
     min-height: 0;
-    flex-shrink: 0;
-    padding: 0.75rem 0.95rem 0.65rem;
+    flex-shrink: 1;
+    padding: 0.55rem 0.85rem 0.5rem;
+    overflow: hidden;
   }
 
   .panel-lead,
@@ -618,11 +638,21 @@ input {
 
   body.panel-open .panel {
     display: flex;
-    margin-top: auto;
+    margin-top: 0;
+    padding-right: 4.6rem;
   }
 
   body.panel-open .panel-toggle {
-    margin-top: 0;
+    grid-area: panel;
+    justify-self: end;
+    align-self: start;
+    width: auto;
+    min-width: 48px;
+    min-height: 48px;
+    margin: 0.4rem 0.4rem 0 0;
+    padding: 0.4rem 0.85rem;
+    z-index: 3;
+    font-size: 1.05rem;
   }
 
   body.panel-open .odometer,
@@ -633,33 +663,44 @@ input {
     display: none;
   }
 
+  body.panel-open .drive-wrap {
+    margin-top: 0.15rem;
+  }
+
   body.panel-open .drive {
-    min-height: 4.4rem;
+    min-height: max(48px, 3.5rem);
+    font-size: 1.85rem;
   }
 
   body.panel-open .upgrade {
-    min-height: 64px;
-    padding: 0.6rem 0.8rem;
+    min-height: 56px;
+    padding: 0.5rem 0.75rem;
   }
 
   body.panel-open .panel h2 {
-    font-size: 1.4rem;
+    font-size: 1.28rem;
   }
 
   body.panel-open .prestige-box {
-    margin-top: 0.4rem;
-    padding-top: 0.4rem;
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    flex-shrink: 0;
   }
 
   body.panel-open .prestige {
-    min-height: 2.6rem;
-    font-size: 1.05rem;
+    min-height: 2.4rem;
+    font-size: 1.02rem;
+  }
+
+  body.panel-open .prestige-box:has(.prestige:disabled) {
+    display: none;
   }
 
   .drive {
     width: 100%;
     min-height: 4.8rem;
     font-size: 2rem;
+    flex-shrink: 0;
   }
 
   .miles {
@@ -669,7 +710,11 @@ input {
 
 @media (max-width: 900px) and (max-height: 740px) {
   .panel {
-    max-height: min(18vh, 8.75rem);
+    max-height: min(12vh, 5.75rem);
+  }
+
+  body.panel-open .drive {
+    min-height: max(48px, 3.25rem);
   }
 }
 
@@ -682,14 +727,19 @@ input {
     display: grid;
     grid-template-columns: 1fr minmax(220px, 42vw);
     grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "topbar topbar"
+      "stage panel";
     gap: 0.7rem;
   }
 
   .topbar {
+    grid-area: topbar;
     grid-column: 1 / -1;
   }
 
   .stage {
+    grid-area: stage;
     order: 0;
     margin-top: 0;
     padding-bottom: 0.4rem;
@@ -700,6 +750,7 @@ input {
 
   .panel {
     display: flex;
+    grid-area: panel;
     order: 0;
     max-height: none;
     height: 100%;
@@ -710,12 +761,25 @@ input {
     grid-row: 2;
   }
 
+  body.panel-open .panel {
+    padding-right: 1.15rem;
+  }
+
   body.panel-open .odometer,
   body.panel-open .rate,
   body.panel-open .trip,
   body.panel-open .hint,
   body.panel-open .unit {
     display: block;
+  }
+
+  body.panel-open .drive-wrap {
+    margin-top: 1.4rem;
+  }
+
+  body.panel-open .drive {
+    min-height: 3.8rem;
+    font-size: 1.7rem;
   }
 
   body.panel-open .panel h2 {
@@ -725,6 +789,10 @@ input {
   body.panel-open .upgrade {
     min-height: 76px;
     padding: 0.85rem 0.95rem;
+  }
+
+  body.panel-open .prestige-box:has(.prestige:disabled) {
+    display: block;
   }
 
   .panel-lead,
@@ -807,6 +875,16 @@ body.large-type .modal-body {
   body.large-type .drive {
     font-size: 2.2rem;
     min-height: 5.1rem;
+  }
+
+  body.large-type.panel-open .drive {
+    font-size: 2rem;
+    min-height: max(48px, 4.2rem);
+  }
+
+  body.panel-open .upgrades {
+    min-height: 0;
+    flex: 1;
   }
 }
 
