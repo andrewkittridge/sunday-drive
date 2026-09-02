@@ -57,37 +57,64 @@ function makeGrassTexture(base, dark, light) {
 
 function makeRoadTexture() {
   return canvasTexture(256, (ctx, size) => {
-    ctx.fillStyle = '#4a4743';
+    ctx.fillStyle = '#3b3d42';
     ctx.fillRect(0, 0, size, size);
-    for (let i = 0; i < 2200; i += 1) {
-      const shade = 68 + Math.random() * 38;
-      ctx.fillStyle = `rgb(${shade},${shade - 2},${shade - 8})`;
-      ctx.fillRect(Math.random() * size, Math.random() * size, 2, 2);
+    for (let i = 0; i < 2800; i += 1) {
+      const cool = Math.random() > 0.55;
+      const shade = cool ? 58 + Math.random() * 28 : 44 + Math.random() * 18;
+      const r = shade;
+      const g = shade - (cool ? 1 : 2);
+      const b = shade + (cool ? 6 : 0);
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(
+        Math.random() * size,
+        Math.random() * size,
+        1 + Math.random() * 2,
+        1 + Math.random() * 2,
+      );
     }
-    ctx.fillStyle = 'rgba(28, 24, 20, 0.2)';
-    ctx.fillRect(size * 0.27, 0, 20, size);
-    ctx.fillRect(size * 0.64, 0, 20, size);
-    ctx.fillStyle = '#efe6d4';
-    ctx.fillRect(7, 0, 7, size);
-    ctx.fillRect(size - 14, 0, 7, size);
-    ctx.fillStyle = '#e6c15a';
-    const dash = Math.floor(size * 0.46);
-    ctx.fillRect(size / 2 - 4, 10, 8, dash);
+    ctx.fillStyle = 'rgba(18, 16, 14, 0.24)';
+    ctx.fillRect(size * 0.26, 0, 22, size);
+    ctx.fillRect(size * 0.64, 0, 22, size);
+    ctx.fillStyle = 'rgba(16, 14, 12, 0.32)';
+    ctx.fillRect(14, 0, 6, size);
+    ctx.fillRect(size - 20, 0, 6, size);
+    ctx.fillStyle = '#f2eee2';
+    ctx.fillRect(6, 0, 8, size);
+    ctx.fillRect(size - 14, 0, 8, size);
+    ctx.fillStyle = '#e8c45a';
+    const dash = Math.floor(size * 0.4);
+    ctx.fillRect(size / 2 - 5, 14, 10, dash);
+  });
+}
+
+function makeShoulderTexture() {
+  return canvasTexture(128, (ctx, size) => {
+    ctx.fillStyle = '#9a8a6a';
+    ctx.fillRect(0, 0, size, size);
+    for (let i = 0; i < 1100; i += 1) {
+      const s = 118 + Math.random() * 52;
+      ctx.fillStyle = `rgb(${s},${s - 14},${s - 30})`;
+      ctx.fillRect(Math.random() * size, Math.random() * size, 1 + Math.random() * 2, 1 + Math.random() * 2);
+    }
   });
 }
 
 function makeWoodTexture() {
   const texture = canvasTexture(128, (ctx, size) => {
-    ctx.fillStyle = '#a86c3c';
+    ctx.fillStyle = '#b07942';
     ctx.fillRect(0, 0, size, size);
     for (let y = 0; y < size; y += 1) {
-      const wave = Math.sin(y * 0.28) * 8 + Math.sin(y * 0.07) * 14;
-      ctx.fillStyle = y % 13 === 0 ? '#6e4020' : y % 5 === 0 ? '#c48852' : '#9a6234';
+      const wave = Math.sin(y * 0.26) * 10 + Math.sin(y * 0.07) * 16;
+      const plank = y % 21 === 0;
+      ctx.fillStyle = plank ? '#5c3418' : y % 5 === 0 ? '#d4a06a' : '#a86c3c';
       ctx.fillRect(0, y, size, 1);
-      ctx.fillStyle = 'rgba(40, 20, 8, 0.18)';
-      ctx.fillRect(16 + wave, y, 12, 1);
-      if (y % 19 === 0) {
-        ctx.fillStyle = 'rgba(220, 170, 110, 0.16)';
+      ctx.fillStyle = 'rgba(48, 22, 8, 0.28)';
+      ctx.fillRect(14 + wave, y, 10, 1);
+      ctx.fillStyle = 'rgba(32, 14, 6, 0.16)';
+      ctx.fillRect(58 + wave * 0.4, y, 7, 1);
+      if (y % 9 === 0) {
+        ctx.fillStyle = 'rgba(236, 196, 140, 0.18)';
         ctx.fillRect(0, y, size, 1);
       }
     }
@@ -100,10 +127,11 @@ function makeShadowTexture() {
   return canvasTexture(
     128,
     (ctx, size) => {
-      const g = ctx.createRadialGradient(64, 64, 6, 64, 64, 62);
-      g.addColorStop(0, 'rgba(0,0,0,0.56)');
-      g.addColorStop(0.38, 'rgba(0,0,0,0.26)');
-      g.addColorStop(0.72, 'rgba(0,0,0,0.08)');
+      const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 62);
+      g.addColorStop(0, 'rgba(0,0,0,0.62)');
+      g.addColorStop(0.28, 'rgba(0,0,0,0.34)');
+      g.addColorStop(0.58, 'rgba(0,0,0,0.12)');
+      g.addColorStop(0.82, 'rgba(0,0,0,0.04)');
       g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, size, size);
@@ -116,7 +144,7 @@ function makeCookieMaterial() {
   return new THREE.ShaderMaterial({
     uniforms: {
       uStrength: { value: 0 },
-      uColor: { value: new THREE.Color('#f0a24a') },
+      uColor: { value: new THREE.Color('#f3d4a0') },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -130,21 +158,20 @@ function makeCookieMaterial() {
       uniform vec3 uColor;
       varying vec2 vUv;
 
-      float lamp(vec2 uv, vec2 origin) {
-        vec2 p = uv - origin;
-        p.x *= 2.05;
-        p.y *= 1.12;
-        float d = dot(p, p);
-        float core = exp(-d * 7.6);
-        float wash = exp(-d * 2.4);
-        return core * 0.62 + wash * 0.34;
+      float ellipse(vec2 uv, vec2 origin, vec2 scale, float tight) {
+        vec2 p = (uv - origin) * scale;
+        return exp(-dot(p, p) * tight);
       }
 
       void main() {
-        float a = lamp(vUv, vec2(0.36, 0.11)) + lamp(vUv, vec2(0.64, 0.11));
+        float wash = ellipse(vUv, vec2(0.5, 0.3), vec2(2.28, 0.72), 2.05);
+        float core = ellipse(vUv, vec2(0.5, 0.18), vec2(2.55, 1.02), 5.1);
+        float left = ellipse(vUv, vec2(0.41, 0.11), vec2(3.35, 1.32), 8.2);
+        float right = ellipse(vUv, vec2(0.59, 0.11), vec2(3.35, 1.32), 8.2);
+        float a = wash * 0.48 + core * 0.36 + (left + right) * 0.2;
         a = min(a, 1.0);
-        a *= smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x);
-        a *= smoothstep(0.0, 0.06, vUv.y) * smoothstep(0.78, 0.22, vUv.y);
+        a *= smoothstep(0.06, 0.2, vUv.x) * smoothstep(0.94, 0.8, vUv.x);
+        a *= smoothstep(0.0, 0.08, vUv.y) * smoothstep(0.9, 0.36, vUv.y);
         a *= uStrength;
         gl_FragColor = vec4(uColor, a);
       }
@@ -177,32 +204,32 @@ function makeMoteTexture() {
 
 function createCar() {
   const car = new THREE.Group();
-  const paint = 0xf3e6cc;
+  const paint = 0xf7ead2;
   const bodyMat = new THREE.MeshPhongMaterial({
     color: paint,
-    shininess: 22,
-    specular: 0x6a5e50,
+    shininess: 38,
+    specular: 0x8a7a64,
   });
   const woodMat = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     map: makeWoodTexture(),
-    shininess: 14,
-    specular: 0x5a4030,
+    shininess: 18,
+    specular: 0x6a4830,
   });
   const darkMat = new THREE.MeshLambertMaterial({ color: 0x2a2622 });
   const chromeMat = new THREE.MeshPhongMaterial({
-    color: 0xd0ccc0,
-    shininess: 110,
-    specular: 0xb0aaa0,
+    color: 0xe2ddd4,
+    shininess: 140,
+    specular: 0xc8c4ba,
   });
   const glassMat = new THREE.MeshPhongMaterial({
-    color: 0x4e5c52,
-    shininess: 96,
-    specular: 0xe8d8c0,
+    color: 0x5e6e6c,
+    shininess: 130,
+    specular: 0xd0dce0,
     transparent: true,
-    opacity: 0.7,
-    emissive: 0x3a2414,
-    emissiveIntensity: 0.08,
+    opacity: 0.58,
+    emissive: 0x243038,
+    emissiveIntensity: 0.06,
     depthWrite: false,
   });
   const rubberMat = new THREE.MeshLambertMaterial({ color: 0x1a1816 });
@@ -344,9 +371,9 @@ function createCar() {
     lamp.position.set(x, 0.66, -2.2);
     car.add(lamp);
 
-    const spot = new THREE.SpotLight(0xffe4b0, 0, 14, 0.32, 0.9, 2);
+    const spot = new THREE.SpotLight(0xffe4b0, 0, 12, 0.26, 0.92, 2);
     spot.position.set(x, 0.66, -2.22);
-    spot.target.position.set(x * 0.12, 0.08, -8.5);
+    spot.target.position.set(x * 0.08, 0.06, -9.2);
     spot.castShadow = false;
     car.add(spot);
     car.add(spot.target);
@@ -358,9 +385,9 @@ function createCar() {
   car.add(kiss);
 
   const cookieMat = makeCookieMaterial();
-  const kissMesh = new THREE.Mesh(new THREE.PlaneGeometry(5.8, 9.4), cookieMat);
+  const kissMesh = new THREE.Mesh(new THREE.PlaneGeometry(6.15, 12.2), cookieMat);
   kissMesh.rotation.x = -Math.PI / 2;
-  kissMesh.position.set(0, 0.098, -6.7);
+  kissMesh.position.set(0, 0.096, -8.05);
   kissMesh.renderOrder = 1;
   kissMesh.visible = false;
   car.add(kissMesh);
@@ -464,7 +491,7 @@ function createCar() {
   }
 
   const shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(4.35, 8.2),
+    new THREE.PlaneGeometry(3.85, 8.6),
     new THREE.MeshBasicMaterial({
       map: makeShadowTexture(),
       transparent: true,
@@ -472,7 +499,7 @@ function createCar() {
     }),
   );
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.11;
+  shadow.position.set(0, 0.105, 0.12);
   shadow.renderOrder = -1;
   car.add(shadow);
 
@@ -505,8 +532,8 @@ export function createWorld(canvas) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
-  const fogColor = new THREE.Color('#f2c898');
-  scene.fog = new THREE.Fog(fogColor, 64, 148);
+  const fogColor = new THREE.Color('#e8c49a');
+  scene.fog = new THREE.Fog(fogColor, 78, 176);
   scene.background = fogColor.clone();
 
   const camera = new THREE.PerspectiveCamera(
@@ -551,10 +578,10 @@ export function createWorld(canvas) {
       glowColor: { value: new THREE.Color('#ffb070') },
       offset: { value: 0.02 },
       midStart: { value: 0.0 },
-      midEnd: { value: 0.1 },
-      topStart: { value: 0.06 },
-      topEnd: { value: 0.24 },
-      glow: { value: 0.22 },
+      midEnd: { value: 0.08 },
+      topStart: { value: 0.02 },
+      topEnd: { value: 0.18 },
+      glow: { value: 0.12 },
     },
     vertexShader: `
       varying vec3 vWorldPosition;
@@ -688,8 +715,8 @@ export function createWorld(canvas) {
     new THREE.PlaneGeometry(8.4, 280),
     new THREE.MeshPhongMaterial({
       map: roadTex,
-      shininess: 24,
-      specular: 0x5a5448,
+      shininess: 28,
+      specular: 0x4a4e54,
       polygonOffset: true,
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
@@ -700,8 +727,11 @@ export function createWorld(canvas) {
   road.receiveShadow = true;
   scene.add(road);
 
+  const shoulderTex = makeShoulderTexture();
+  shoulderTex.repeat.set(4, 70);
   const shoulderMat = new THREE.MeshLambertMaterial({
     color: 0x9a8a6a,
+    map: shoulderTex,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
@@ -745,6 +775,12 @@ export function createWorld(canvas) {
     addHill(56, -128, 20, 0x9aa574),
     addHill(-60, -150, 24, 0x7a8d5e),
   ];
+  const ridges = [
+    addHill(-96, -132, 40, 0x8a9a78),
+    addHill(104, -148, 46, 0x9aa882),
+    addHill(-88, -164, 54, 0x7a8c6a),
+    addHill(92, -180, 38, 0x94a070),
+  ];
 
   const cloudUniforms = {
     uLit: { value: new THREE.Color('#faebd4') },
@@ -774,13 +810,13 @@ export function createWorld(canvas) {
       void main() {
         vec3 N = normalize(vWorldNormal);
         vec3 L = normalize(uLightDir);
-        float wrap = clamp(dot(N, L) * 0.42 + 0.58, 0.0, 1.0);
-        float belly = smoothstep(0.18, -0.62, N.y);
-        float crown = smoothstep(0.02, 0.78, N.y);
+        float wrap = clamp(dot(N, L) * 0.48 + 0.52, 0.0, 1.0);
+        float belly = smoothstep(0.32, -0.58, N.y);
+        float crown = smoothstep(-0.08, 0.7, N.y);
         vec3 col = mix(uShade, uLit, wrap);
-        col = mix(col, uUnder, belly * 0.92);
-        col = mix(col, uLit, crown * 0.22);
-        float rim = pow(max(0.0, 1.0 - abs(dot(N, L))), 1.4) * 0.3;
+        col = mix(col, uUnder, belly * 0.98);
+        col = mix(col, uLit, crown * 0.42);
+        float rim = pow(max(0.0, 1.0 - abs(dot(N, L))), 1.55) * 0.22;
         col += uRim * rim;
         gl_FragColor = vec4(col, uOpacity);
       }
@@ -794,17 +830,17 @@ export function createWorld(canvas) {
   const puffGeo = new THREE.SphereGeometry(1.9, 11, 8);
   const clouds = [];
   const puffOffsets = [
-    [0.0, 0.42, 0.0, 1.78, 1.08, 1.4],
-    [1.78, 0.58, 0.3, 1.22, 0.95, 1.08],
-    [-1.7, 0.5, -0.22, 1.32, 0.98, 1.16],
-    [0.32, 1.28, 0.18, 1.08, 0.9, 0.96],
-    [-0.82, 1.18, -0.14, 1.0, 0.86, 0.9],
-    [1.12, 0.18, -0.82, 0.95, 0.62, 0.86],
-    [-0.48, 0.14, 0.92, 1.05, 0.6, 0.94],
-    [0.08, 1.78, 0.06, 0.78, 0.68, 0.7],
-    [1.22, 1.05, 0.5, 0.82, 0.7, 0.72],
-    [-1.18, 0.95, 0.4, 0.76, 0.66, 0.68],
-    [0.55, 0.08, 0.22, 1.12, 0.48, 0.95],
+    [0.0, 0.28, 0.0, 2.05, 0.78, 1.58],
+    [1.92, 0.4, 0.32, 1.38, 0.68, 1.22],
+    [-1.86, 0.36, -0.24, 1.48, 0.7, 1.28],
+    [0.38, 0.92, 0.16, 1.18, 0.62, 1.02],
+    [-0.9, 0.84, -0.12, 1.08, 0.58, 0.96],
+    [1.22, 0.08, -0.88, 1.05, 0.46, 0.92],
+    [-0.52, 0.06, 0.98, 1.12, 0.44, 1.0],
+    [0.1, 1.22, 0.05, 0.82, 0.5, 0.74],
+    [1.28, 0.72, 0.52, 0.88, 0.52, 0.76],
+    [-1.24, 0.66, 0.38, 0.8, 0.48, 0.7],
+    [0.58, 0.02, 0.2, 1.22, 0.36, 1.02],
   ];
   function createCloud() {
     const group = new THREE.Group();
@@ -886,11 +922,12 @@ export function createWorld(canvas) {
   const nightShade = new THREE.Color(0x2e3848);
   const moonRim = new THREE.Color(0xd4dcec);
   const cloudUnder = new THREE.Color();
-  const roadSpecDay = new THREE.Color(0x5a5448);
+  const roadSpecDay = new THREE.Color(0x4a4e54);
   const roadSpecDusk = new THREE.Color(0x8a7a60);
-  const roadSpecNight = new THREE.Color(0x9a8a68);
+  const roadSpecNight = new THREE.Color(0xb49a70);
   const cloudShade = new THREE.Color();
   const cloudRim = new THREE.Color();
+  const ridgeColor = new THREE.Color();
 
   function makeMistTexture() {
     return canvasTexture(
@@ -1078,10 +1115,10 @@ export function createWorld(canvas) {
     } else if (type === 'deer') {
       const deer = createDeer();
       const side = kind ? 1 : Math.random() > 0.5 ? 1 : -1;
-      deer.scale.setScalar(1.82);
-      deer.position.set(side * 8.4, 0, -6.35);
-      deer.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
-      if (deer.userData.head) deer.userData.head.rotation.y = side * 0.16;
+      deer.scale.setScalar(2.18);
+      deer.position.set(side * 7.55, 0, -3.55);
+      deer.rotation.y = side > 0 ? 0.28 : -0.28;
+      if (deer.userData.head) deer.userData.head.rotation.y = -side * 0.32;
       deer.userData.side = side;
       eventRoot.add(deer);
       eventState.deer = deer;
@@ -1120,7 +1157,7 @@ export function createWorld(canvas) {
       const deer = eventState.deer;
       const side = deer.userData.side || 1;
       if (deer.userData.head) {
-        deer.userData.head.rotation.y = side * 0.18 + Math.sin(t * 0.7) * 0.1;
+        deer.userData.head.rotation.y = -side * 0.32 + Math.sin(t * 0.7) * 0.1;
       }
       if (t > 7) {
         const walk = reduced ? 0.18 : 0.48;
@@ -1223,8 +1260,8 @@ export function createWorld(canvas) {
     nightBottom.setHex(theme.nightBottom);
     daySun.setHex(theme.sunDay);
     duskSun.setHex(theme.sunDusk);
-    dayMid.copy(dayBottom).lerp(duskSun, 0.42);
-    duskMid.copy(duskBottom).lerp(duskSun, 0.28);
+    dayMid.copy(dayBottom).lerp(dayTop, 0.22).lerp(duskSun, 0.16);
+    duskMid.copy(duskBottom).lerp(duskSun, 0.22);
     nightMid.copy(nightBottom).lerp(nightTop, 0.4);
     dayFog.setHex(theme.fog);
     duskFog.setHex(theme.duskFog);
@@ -1236,7 +1273,18 @@ export function createWorld(canvas) {
 
     hills.forEach((hill, i) => {
       hill.material.color.setHex(theme.hills[i % theme.hills.length]);
+      hill.material.color.lerp(dayFog, 0.1);
       seatHill(hill, theme.hillScale);
+    });
+    ridgeColor.setHex(theme.horizon).lerp(duskFog, 0.28);
+    ridges.forEach((hill, i) => {
+      hill.material.color.copy(ridgeColor);
+      if (i % 2 === 1) hill.material.color.lerp(dayFog, 0.18);
+      seatHill(hill, [
+        theme.hillScale[0] * 1.42,
+        theme.hillScale[1] * 0.82,
+        theme.hillScale[2] * 1.48,
+      ]);
     });
 
     clearGroup(scenery);
@@ -1268,6 +1316,7 @@ export function createWorld(canvas) {
     clock.travel += speed * dt;
 
     roadTex.offset.y = (clock.travel * 0.085) % 1;
+    shoulderTex.offset.y = (clock.travel * 0.085) % 1;
     Object.values(grassMaps).forEach((tex) => {
       tex.offset.y = (clock.travel * 0.012) % 1;
     });
@@ -1281,19 +1330,20 @@ export function createWorld(canvas) {
     const dusk = airFalloff(altitude, 0.42, 0.05);
     const night = airFalloff(altitude, 0.1, -0.16);
 
-    skyMat.uniforms.topColor.value.copy(dayTop).lerp(duskTop, dusk * 0.18).lerp(nightTop, night);
+    skyMat.uniforms.topColor.value.copy(dayTop).lerp(duskTop, dusk * 0.12).lerp(nightTop, night);
     skyMat.uniforms.midColor.value.copy(dayMid).lerp(duskMid, dusk).lerp(nightMid, night);
     skyMat.uniforms.bottomColor.value.copy(dayBottom).lerp(duskBottom, dusk).lerp(nightBottom, night);
-    skyMat.uniforms.topEnd.value = 0.22 + dusk * 0.04 + night * 0.1;
-    skyMat.uniforms.glow.value = 0.16 + dusk * 0.14 - night * 0.1;
-    skyMat.uniforms.glowColor.value.copy(duskBottom).lerp(duskSun, 0.22).lerp(nightBottom, night);
+    skyMat.uniforms.topStart.value = 0.02;
+    skyMat.uniforms.topEnd.value = 0.16 + dusk * 0.03 + night * 0.08;
+    skyMat.uniforms.glow.value = 0.06 + dusk * 0.08 - night * 0.04;
+    skyMat.uniforms.glowColor.value.copy(duskBottom).lerp(duskSun, 0.1).lerp(nightBottom, night);
     tmpColor.copy(dayFog).lerp(duskFog, dusk).lerp(nightFog, night);
-    tmpColor.lerp(skyMat.uniforms.bottomColor.value, 0.32);
-    tmpColor.multiplyScalar(0.9 + dusk * 0.04 - night * 0.02);
+    tmpColor.lerp(skyMat.uniforms.bottomColor.value, 0.12);
+    tmpColor.multiplyScalar(0.74 + dusk * 0.06 - night * 0.04);
     scene.fog.color.copy(tmpColor);
     scene.background.copy(tmpColor);
-    scene.fog.near = 68 + dusk * 2 + night * 8;
-    scene.fog.far = 140 + dusk * 2 - night * 14;
+    scene.fog.near = 62 + dusk * 3 + night * 8;
+    scene.fog.far = 162 + dusk * 6 - night * 18;
     hemi.color.copy(dayHemi).lerp(duskHemi, dusk).lerp(moonFill, night * 0.55);
     hemi.intensity = 0.58 + (1 - dusk) * 0.16 - night * 0.18;
     sunLight.intensity = night > 0.55 ? 0.2 : Math.max(0.18, 1.68 - dusk * 0.38 - night * 1.05);
@@ -1303,14 +1353,15 @@ export function createWorld(canvas) {
     renderer.toneMappingExposure = 1.14 - dusk * 0.1 - night * 0.22;
     car.userData.lights.emissiveIntensity = 0.18 + dusk * 0.7 + night * 1.15;
     car.userData.tails.emissiveIntensity = 0.16 + dusk * 0.35 + night * 0.7;
-    const beam = dusk * 4.2 + night * 8.5;
+    const beam = dusk * 1.7 + night * 3.4;
     car.userData.spots.forEach((spot) => {
       spot.intensity = beam;
     });
-    car.userData.kiss.intensity = dusk * 1.2 + night * 2.4;
+    car.userData.kiss.intensity = dusk * 0.48 + night * 0.95;
     if (car.userData.kissMesh) {
-      const strength = dusk * 0.4 + night * 0.62;
+      const strength = dusk * 0.4 + night * 0.58;
       car.userData.kissMesh.material.uniforms.uStrength.value = strength;
+      car.userData.kissMesh.material.uniforms.uColor.value.set(night > 0.45 ? '#f0c07a' : '#f3d4a0');
       car.userData.kissMesh.visible = strength > 0.05;
     }
     if (car.userData.glass) {
@@ -1336,14 +1387,14 @@ export function createWorld(canvas) {
     stars.rotation.y = phase * 0.15;
 
     const cloudNight = Math.max(0, Math.min(1, (night - 0.28) / 0.6));
-    cloudUniforms.uLit.value.copy(cloudDay).lerp(duskSun, dusk * 0.42).lerp(nightCloud, cloudNight);
-    cloudShade.copy(cloudDay).multiplyScalar(0.72).lerp(duskHemi, dusk * 0.45).lerp(nightShade, cloudNight);
+    cloudUniforms.uLit.value.copy(cloudDay).lerp(duskSun, dusk * 0.16).lerp(nightCloud, cloudNight);
+    cloudShade.copy(cloudDay).multiplyScalar(0.66).lerp(duskHemi, dusk * 0.28).lerp(nightShade, cloudNight);
     cloudUniforms.uShade.value.copy(cloudShade);
     cloudRim.copy(duskSun).lerp(moonRim, cloudNight);
     cloudUniforms.uRim.value.copy(cloudRim);
-    cloudUnder.copy(duskSun).lerp(cloudDay, 0.18).lerp(moonRim, cloudNight * 0.55);
+    cloudUnder.copy(duskSun).lerp(cloudDay, 0.06).lerp(moonRim, cloudNight * 0.5);
     cloudUniforms.uUnder.value.copy(cloudUnder);
-    cloudUniforms.uOpacity.value = 0.84 - cloudNight * 0.08;
+    cloudUniforms.uOpacity.value = 0.88 - cloudNight * 0.08;
     const lightSrc = sun.visible ? sun.position : moon.position;
     cloudUniforms.uLightDir.value.copy(lightSrc).normalize();
     grass.material.color.setRGB(1 - night * 0.38, 1 - night * 0.35, 1 - night * 0.28);
@@ -1359,6 +1410,7 @@ export function createWorld(canvas) {
       recycleZ(item.obj, move * item.speed, item.far, item.near);
     });
     hills.forEach((hill) => recycleZ(hill, move * 0.22, 90, 20));
+    ridges.forEach((hill) => recycleZ(hill, move * 0.1, 120, 36));
     const cloudDrift = reduced ? 0.05 : 0.22;
     clouds.forEach((cloud, i) => {
       cloud.position.x += dt * (cloudDrift + i * 0.03 * (reduced ? 0.2 : 1));
