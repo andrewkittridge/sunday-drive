@@ -194,6 +194,8 @@ export class Ambience {
     this.cache = new Map();
     this.musicSource = null;
     this.musicGain = null;
+    this.rumbleGain = null;
+    this.windGain = null;
     this.lastDrive = 0;
   }
 
@@ -224,6 +226,14 @@ export class Ambience {
     if (!this.started || !this.ctx) return;
     const dest = game.destination?.id || 'county';
     const tier = mixtapeTier(game.levels?.mixtape);
+    const impulse = game.driveImpulse || 0;
+    const now = this.ctx.currentTime;
+    if (this.rumbleGain) {
+      this.rumbleGain.gain.setTargetAtTime(0.07 + impulse * 0.05, now, 0.18);
+    }
+    if (this.windGain) {
+      this.windGain.gain.setTargetAtTime(0.024 + impulse * 0.012, now, 0.22);
+    }
     if (dest === this.dest && tier === this.tier) return;
     this.playTape(dest, tier);
   }
@@ -337,7 +347,8 @@ export class Ambience {
     rumble2.type = 'triangle';
     rumble2.frequency.value = 87;
     const rumbleGain = this.ctx.createGain();
-    rumbleGain.gain.value = 0.09;
+    rumbleGain.gain.value = 0.07;
+    this.rumbleGain = rumbleGain;
     const rumbleFilter = this.ctx.createBiquadFilter();
     rumbleFilter.type = 'lowpass';
     rumbleFilter.frequency.value = 220;
@@ -373,7 +384,8 @@ export class Ambience {
     wind.frequency.value = 620;
     wind.Q.value = 0.55;
     const windGain = this.ctx.createGain();
-    windGain.gain.value = 0.028;
+    windGain.gain.value = 0.024;
+    this.windGain = windGain;
     noise.connect(wind);
     wind.connect(windGain);
     windGain.connect(this.master);

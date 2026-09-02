@@ -11,10 +11,10 @@ export const THEMES = {
     foliage: [0x6b8f3c, 0x7a9a45, 0xc4a35a, 0x5e7d38, 0xb08a3c],
     skyTop: 0x7ea6d4,
     skyBottom: 0xf3d2a0,
-    duskTop: 0xc45c4a,
-    duskBottom: 0xf0a56a,
+    duskTop: 0x8a90b8,
+    duskBottom: 0xf3c090,
     fog: 0xf0c090,
-    duskFog: 0xe08958,
+    duskFog: 0xecc09a,
     hemiSky: 0xffc088,
     hemiDusk: 0xff9a68,
     hemiGround: 0x5d7a3a,
@@ -61,10 +61,10 @@ export const THEMES = {
     foliage: [0x6a8a38, 0xa24b3a, 0xb08a3c, 0x5a702c, 0xc46a48],
     skyTop: 0x88b0d4,
     skyBottom: 0xf6d4a8,
-    duskTop: 0xd45a3a,
-    duskBottom: 0xf0a060,
+    duskTop: 0xd47858,
+    duskBottom: 0xf2b078,
     fog: 0xf2c49a,
-    duskFog: 0xe07848,
+    duskFog: 0xe89068,
     hemiSky: 0xffc090,
     hemiDusk: 0xff8a60,
     hemiGround: 0x6a7a38,
@@ -86,10 +86,10 @@ export const THEMES = {
     foliage: [0x5a7a3c, 0x6a8a48, 0x4a6a34, 0x8a9a50, 0xb08a48],
     skyTop: 0x6e98c4,
     skyBottom: 0xf0d4b4,
-    duskTop: 0xb85a4a,
+    duskTop: 0x8a7088,
     duskBottom: 0xecb080,
     fog: 0xe4c4a8,
-    duskFog: 0xd09070,
+    duskFog: 0xd8a888,
     hemiSky: 0xffd0a8,
     hemiDusk: 0xffa078,
     hemiGround: 0x4a6240,
@@ -136,10 +136,10 @@ export const THEMES = {
     foliage: [0x8a9a40, 0xc4a24a, 0x6a7a30, 0xb08a38, 0xd4b060],
     skyTop: 0x7ab0d8,
     skyBottom: 0xf8e0a8,
-    duskTop: 0xe07040,
-    duskBottom: 0xf0b060,
+    duskTop: 0xc49078,
+    duskBottom: 0xf2c078,
     fog: 0xf0d090,
-    duskFog: 0xe89858,
+    duskFog: 0xecc090,
     hemiSky: 0xffe0a8,
     hemiDusk: 0xffa060,
     hemiGround: 0x8a7a38,
@@ -211,10 +211,10 @@ export const THEMES = {
     foliage: [0x6a7a48, 0x8a8a58, 0x5a6a3c, 0xa09060, 0x708050],
     skyTop: 0x5a98d0,
     skyBottom: 0xf0c888,
-    duskTop: 0xe07048,
-    duskBottom: 0xf0a060,
+    duskTop: 0xc48870,
+    duskBottom: 0xf0b878,
     fog: 0xe8c090,
-    duskFog: 0xe09058,
+    duskFog: 0xe8a878,
     hemiSky: 0xffe0b0,
     hemiDusk: 0xffb070,
     hemiGround: 0xa08050,
@@ -368,17 +368,58 @@ function makeTree(kind, color) {
 
 function createBarn() {
   const barn = new THREE.Group();
-  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(6.5, 3.2, 4.4), lambert(0xa24b3a)));
-  body.position.y = 1.6;
+  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(7.0, 3.4, 4.8), lambert(0xb03c32)));
+  body.position.y = 1.7;
   barn.add(body);
-  const roof = addShadow(new THREE.Mesh(new THREE.ConeGeometry(4.6, 2.2, 4), lambert(0x6a4a3a)));
-  roof.position.y = 4.1;
-  roof.rotation.y = Math.PI / 4;
-  barn.add(roof);
-  const door = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.1, 0.12), lambert(0x3d2a22));
-  door.position.set(0, 1.05, 2.24);
+  const roofMat = lambert(0x4a3228);
+  const roofL = addShadow(new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.18, 5.2), roofMat));
+  roofL.position.set(-1.5, 3.9, 0);
+  roofL.rotation.z = 0.52;
+  barn.add(roofL);
+  const roofR = addShadow(new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.18, 5.2), roofMat));
+  roofR.position.set(1.5, 3.9, 0);
+  roofR.rotation.z = -0.52;
+  barn.add(roofR);
+  const ridge = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 5.3), roofMat));
+  ridge.position.set(0, 4.88, 0);
+  barn.add(ridge);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.4, 0.1), lambert(0xe8dcc8));
+  door.position.set(0, 1.2, 2.42);
   barn.add(door);
+  const xMat = lambert(0x6a4030);
+  const x1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.55, 0.08), xMat);
+  x1.position.set(0, 1.2, 2.48);
+  x1.rotation.z = 0.55;
+  barn.add(x1);
+  const x2 = x1.clone();
+  x2.rotation.z = -0.55;
+  barn.add(x2);
   return barn;
+}
+
+function createWindmill() {
+  const mill = new THREE.Group();
+  const tower = addShadow(
+    new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.22, 5.2, 6), lambert(0x6a6a64)),
+  );
+  tower.position.y = 2.6;
+  mill.add(tower);
+  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.38, 0.55), lambert(0x4a4038)));
+  head.position.y = 5.28;
+  mill.add(head);
+  const bladeMat = lambert(0xd8c8b0);
+  const blades = new THREE.Group();
+  blades.position.set(0.3, 5.28, 0);
+  for (let i = 0; i < 4; i += 1) {
+    const arm = new THREE.Group();
+    arm.rotation.z = (i * Math.PI) / 2;
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.2, 0.06), bladeMat);
+    blade.position.y = 1.15;
+    arm.add(blade);
+    blades.add(arm);
+  }
+  mill.add(blades);
+  return mill;
 }
 
 function createSilo() {
@@ -550,7 +591,15 @@ function createChapel() {
 }
 
 function createLandmark(kind) {
-  if (kind === 'barn') return createBarn();
+  if (kind === 'barn') {
+    const group = new THREE.Group();
+    group.add(createBarn());
+    const mill = createWindmill();
+    mill.position.set(8.2, 0, -2.4);
+    mill.scale.setScalar(0.88);
+    group.add(mill);
+    return group;
+  }
   if (kind === 'barns') return createBarn();
   if (kind === 'pond') return createPond();
   if (kind === 'diner') return createDiner();
@@ -591,6 +640,25 @@ function createReed() {
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.07, 4, 4), lambert(0x6a4a28));
     head.position.set(stem.position.x, 1.15 + (i % 3) * 0.1, stem.position.z);
     group.add(head);
+  }
+  return group;
+}
+
+function createFenceRun(length = 9.5) {
+  const group = new THREE.Group();
+  const postMat = lambert(0x4a382c);
+  const railMat = lambert(0x5a4030);
+  const posts = 3;
+  const spacing = length / (posts - 1);
+  for (let i = 0; i < posts; i += 1) {
+    const post = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.13, 1.18, 0.13), postMat));
+    post.position.set(0, 0.59, -i * spacing);
+    group.add(post);
+  }
+  for (const y of [0.4, 0.8]) {
+    const rail = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.08, length), railMat));
+    rail.position.set(0, y, -length / 2);
+    group.add(rail);
   }
   return group;
 }
@@ -692,126 +760,123 @@ export function populateScenery(scenery, theme) {
     movers.push({ obj: object, far, near, speed });
   }
 
-  const treeCount = theme.treeKind === 'sage' || theme.treeKind === 'scrub' ? 22 : 28;
+  const treeCount = theme.treeKind === 'pine' ? 16 : theme.treeKind === 'sage' || theme.treeKind === 'scrub' ? 10 : 12;
   for (let i = 0; i < treeCount; i += 1) {
     const tree = makeTree(theme.treeKind, theme.foliage[i % theme.foliage.length]);
     const side = i % 2 === 0 ? -1 : 1;
-    const x = side * (9.2 + (i % 7) * 3.2 + (i % 3) * 0.6);
-    tree.scale.setScalar(0.82 + (i % 5) * 0.13);
-    if (theme.treeKind === 'pine') tree.scale.setScalar(0.95 + (i % 4) * 0.18);
-    place(tree, x, -145 + i * 10.4);
+    const x = side * (11.5 + (i % 5) * 3.6 + (i % 3) * 0.8);
+    tree.scale.setScalar(0.88 + (i % 5) * 0.14);
+    if (theme.treeKind === 'pine') tree.scale.setScalar(1.02 + (i % 4) * 0.2);
+    place(tree, x, -140 + i * 14.5);
   }
 
   if (theme.extras === 'fence' || theme.extras === 'sparse') {
-    const count = theme.extras === 'sparse' ? 12 : 26;
-    const gap = theme.extras === 'sparse' ? 14 : 9;
-    const postMat = lambert(0x6a5344);
-    const postGeo = new THREE.BoxGeometry(0.12, 1.05, 0.12);
+    const count = theme.extras === 'sparse' ? 5 : 8;
+    const gap = theme.extras === 'sparse' ? 28 : 18;
     for (let i = 0; i < count; i += 1) {
       for (const side of [-1, 1]) {
-        const post = addShadow(new THREE.Mesh(postGeo, postMat));
-        post.position.y = 0.52;
-        place(post, side * 6.55, -120 + i * gap, 150, 16);
+        const run = createFenceRun(theme.extras === 'sparse' ? 8 : 10);
+        place(run, side * 7.15, -118 + i * gap, 160, 18);
       }
     }
   }
 
   if (theme.extras === 'reeds') {
-    for (let i = 0; i < 22; i += 1) {
+    for (let i = 0; i < 12; i += 1) {
       const reed = createReed();
       const side = i % 2 === 0 ? -1 : 1;
-      place(reed, side * (7.1 + (i % 4) * 1.4), -130 + i * 11, 160, 16);
+      place(reed, side * (7.4 + (i % 4) * 1.5), -130 + i * 16, 160, 16);
     }
   }
 
   if (theme.extras === 'town') {
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       const lamp = createLampPost();
       const side = i % 2 === 0 ? -1 : 1;
-      place(lamp, side * 6.35, -110 + i * 18, 170, 16);
+      place(lamp, side * 7.0, -110 + i * 24, 170, 16);
     }
-    for (let i = 0; i < 8; i += 1) {
+    for (let i = 0; i < 4; i += 1) {
       const mail = createMailbox();
       const side = i % 2 === 0 ? -1 : 1;
-      place(mail, side * 6.25, -90 + i * 22, 160, 14);
+      place(mail, side * 6.9, -88 + i * 32, 160, 14);
     }
   }
 
   if (theme.extras === 'dunes') {
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       const dune = createDune();
       const side = i % 2 === 0 ? -1 : 1;
       dune.scale.x *= 1 + (i % 3) * 0.2;
-      place(dune, side * (16 + (i % 3) * 3), -130 + i * 16, 170, 20, 0.9, 16);
+      place(dune, side * (16 + (i % 3) * 3), -130 + i * 22, 170, 20, 0.9, 16);
     }
   }
 
   if (theme.extras === 'hay') {
-    for (let i = 0; i < 14; i += 1) {
+    for (let i = 0; i < 8; i += 1) {
       const bale = createHayBale();
       const side = i % 2 === 0 ? -1 : 1;
-      place(bale, side * (8.5 + (i % 4) * 1.8), -125 + i * 13, 165, 16);
+      place(bale, side * (8.8 + (i % 3) * 1.8), -125 + i * 18, 165, 16);
     }
   }
 
   if (theme.extras === 'pines') {
-    for (let i = 0; i < 8; i += 1) {
+    for (let i = 0; i < 4; i += 1) {
       const rock = createRocks();
-      rock.scale.setScalar(0.35 + (i % 3) * 0.08);
+      rock.scale.setScalar(0.38 + (i % 3) * 0.08);
       const side = i % 2 === 0 ? -1 : 1;
-      place(rock, side * (14 + (i % 3) * 3), -120 + i * 18, 170, 20, 0.85);
+      place(rock, side * (15 + (i % 3) * 3), -120 + i * 28, 170, 20, 0.85);
     }
   }
 
   if (theme.extras === 'sage') {
-    for (let i = 0; i < 16; i += 1) {
+    for (let i = 0; i < 8; i += 1) {
       const sage = createSage(theme.foliage[i % theme.foliage.length]);
       const side = i % 2 === 0 ? -1 : 1;
-      place(sage, side * (8 + (i % 5) * 2.2), -135 + i * 12, 165, 16);
+      place(sage, side * (9 + (i % 4) * 2.4), -135 + i * 18, 165, 16);
     }
   }
 
-  for (let i = 0; i < 20; i += 1) {
+  for (let i = 0; i < 8; i += 1) {
     const tuft = createTuft(theme.foliage[i % theme.foliage.length]);
     const side = i % 2 === 0 ? -1 : 1;
-    place(tuft, side * (6.9 + (i % 6) * 0.85), -140 + i * 12.5, 160, 14);
-  }
-
-  for (let i = 0; i < 10; i += 1) {
-    const rock = createRock();
-    const side = i % 2 === 0 ? -1 : 1;
-    place(rock, side * (7.2 + (i % 4) * 1.6), -100 + i * 17, 160, 14);
-  }
-
-  const flowerColors = [0xc45c2a, 0xe8d48a, 0xd8c8e0, 0xe8a04a];
-  for (let i = 0; i < 8; i += 1) {
-    const flowers = createWildflowers(flowerColors[i % flowerColors.length]);
-    const side = i % 2 === 0 ? -1 : 1;
-    place(flowers, side * (7.4 + (i % 3) * 1.2), -80 + i * 21, 160, 14);
+    place(tuft, side * (7.2 + (i % 5) * 1.1), -136 + i * 18, 160, 14);
   }
 
   for (let i = 0; i < 4; i += 1) {
+    const rock = createRock();
+    const side = i % 2 === 0 ? -1 : 1;
+    place(rock, side * (8.2 + (i % 3) * 1.8), -96 + i * 28, 160, 14);
+  }
+
+  const flowerColors = [0xc45c2a, 0xe8d48a, 0xd8c8e0, 0xe8a04a];
+  for (let i = 0; i < 4; i += 1) {
+    const flowers = createWildflowers(flowerColors[i % flowerColors.length]);
+    const side = i % 2 === 0 ? -1 : 1;
+    place(flowers, side * (7.8 + (i % 3) * 1.3), -72 + i * 32, 160, 14);
+  }
+
+  for (let i = 0; i < 2; i += 1) {
     const sign = new THREE.Group();
     const pole = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.8, 0.08), lambert(0x5a5348));
     pole.position.y = 0.9;
     pole.castShadow = true;
     sign.add(pole);
-    const board = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.06), lambert(0x7a8a5c));
+    const board = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.06), lambert(0xc4a24a));
     board.position.y = 1.7;
     sign.add(board);
     const side = i % 2 === 0 ? -1 : 1;
-    place(sign, side * 6.8, -60 + i * 40, 170, 16);
+    place(sign, side * 7.05, -54 + i * 70, 170, 16);
   }
 
   const landmarkA = createLandmark(theme.landmark);
-  landmarkA.position.set(-20, 0, -52);
+  landmarkA.position.set(-18, 0, -48);
   scenery.add(landmarkA);
   movers.push({ obj: landmarkA, far: 170, near: 24, speed: 1 });
 
   const landmarkB = createLandmark(theme.landmark);
-  landmarkB.position.set(24, 0, -98);
+  landmarkB.position.set(26, 0, -108);
   landmarkB.rotation.y = 0.45;
-  landmarkB.scale.setScalar(theme.landmark === 'lighthouse' || theme.landmark === 'mesa' ? 1.15 : 0.92);
+  landmarkB.scale.setScalar(theme.landmark === 'lighthouse' || theme.landmark === 'mesa' ? 1.15 : 0.9);
   scenery.add(landmarkB);
   movers.push({ obj: landmarkB, far: 170, near: 24, speed: 1 });
 
