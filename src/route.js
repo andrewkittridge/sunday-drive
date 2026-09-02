@@ -293,6 +293,45 @@ function lambert(color, extra = {}) {
   return new THREE.MeshLambertMaterial({ color, ...extra });
 }
 
+function phong(color, extra = {}) {
+  return new THREE.MeshPhongMaterial({
+    color,
+    shininess: 16,
+    specular: 0x4a4034,
+    ...extra,
+  });
+}
+
+let propWoodMap = null;
+function makePropWoodMap() {
+  if (propWoodMap) return propWoodMap;
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#8a5a32';
+  ctx.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 64; y += 1) {
+    ctx.fillStyle = y % 11 === 0 ? '#5a3418' : y % 4 === 0 ? '#c48852' : '#9a6234';
+    ctx.fillRect(0, y, 64, 1);
+  }
+  propWoodMap = new THREE.CanvasTexture(canvas);
+  propWoodMap.colorSpace = THREE.SRGBColorSpace;
+  propWoodMap.wrapS = THREE.RepeatWrapping;
+  propWoodMap.wrapT = THREE.RepeatWrapping;
+  propWoodMap.needsUpdate = true;
+  return propWoodMap;
+}
+
+function woodPhong(tint = 0xffffff, extra = {}) {
+  return phong(tint, {
+    map: makePropWoodMap(),
+    shininess: 12,
+    specular: 0x5a4030,
+    ...extra,
+  });
+}
+
 function addShadow(mesh, cast = true, receive = false) {
   mesh.castShadow = cast;
   mesh.receiveShadow = receive;
@@ -400,10 +439,15 @@ function makeTree(kind, color) {
 
 function createBarn() {
   const barn = new THREE.Group();
-  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(7.0, 3.4, 4.8), lambert(0xb03c32)));
+  const body = addShadow(
+    new THREE.Mesh(
+      new THREE.BoxGeometry(7.0, 3.4, 4.8),
+      phong(0xb03c32, { shininess: 14, specular: 0x6a3028 }),
+    ),
+  );
   body.position.y = 1.7;
   barn.add(body);
-  const roofMat = lambert(0x4a3228);
+  const roofMat = woodPhong(0x6a4a38);
   const roofL = addShadow(new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.18, 5.2), roofMat));
   roofL.position.set(-1.5, 3.9, 0);
   roofL.rotation.z = 0.52;
@@ -415,10 +459,13 @@ function createBarn() {
   const ridge = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 5.3), roofMat));
   ridge.position.set(0, 4.88, 0);
   barn.add(ridge);
-  const door = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.4, 0.1), lambert(0xe8dcc8));
+  const door = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 2.4, 0.1),
+    phong(0xf0e4d0, { shininess: 22, specular: 0x8a7a64 }),
+  );
   door.position.set(0, 1.2, 2.42);
   barn.add(door);
-  const xMat = lambert(0x6a4030);
+  const xMat = woodPhong(0x6a4030);
   const x1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.55, 0.08), xMat);
   x1.position.set(0, 1.2, 2.48);
   x1.rotation.z = 0.55;
@@ -426,27 +473,30 @@ function createBarn() {
   const x2 = x1.clone();
   x2.rotation.z = -0.55;
   barn.add(x2);
+  const loft = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.72, 0.08), phong(0x2a2018, { shininess: 8 }));
+  loft.position.set(0, 2.88, 2.42);
+  barn.add(loft);
   return barn;
 }
 
 function createWindmill() {
   const mill = new THREE.Group();
   const tower = addShadow(
-    new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.22, 5.2, 6), lambert(0x6a6a64)),
+    new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.28, 5.2, 6), woodPhong(0x8a6a48)),
   );
   tower.position.y = 2.6;
   mill.add(tower);
-  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.38, 0.55), lambert(0x4a4038)));
+  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.42, 0.6), woodPhong(0x6a5040)));
   head.position.y = 5.28;
   mill.add(head);
-  const bladeMat = lambert(0xd8c8b0);
+  const bladeMat = phong(0xf0e4cc, { shininess: 28, specular: 0x8a7a64 });
   const blades = new THREE.Group();
   blades.position.set(0.3, 5.28, 0);
   for (let i = 0; i < 4; i += 1) {
     const arm = new THREE.Group();
     arm.rotation.z = (i * Math.PI) / 2;
-    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.2, 0.06), bladeMat);
-    blade.position.y = 1.15;
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.25, 0.06), bladeMat);
+    blade.position.y = 1.18;
     arm.add(blade);
     blades.add(arm);
   }
@@ -457,11 +507,16 @@ function createWindmill() {
 function createSilo() {
   const silo = new THREE.Group();
   const drum = addShadow(
-    new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.25, 5.4, 8), lambert(0xc8c0b4)),
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(1.15, 1.25, 5.4, 8),
+      phong(0xd4ccc0, { shininess: 26, specular: 0x7a746c }),
+    ),
   );
   drum.position.y = 2.7;
   silo.add(drum);
-  const cap = addShadow(new THREE.Mesh(new THREE.ConeGeometry(1.35, 1.1, 8), lambert(0x8a4a32)));
+  const cap = addShadow(
+    new THREE.Mesh(new THREE.ConeGeometry(1.35, 1.1, 8), phong(0x8a4a32, { shininess: 14 })),
+  );
   cap.position.y = 5.9;
   silo.add(cap);
   return silo;
@@ -498,10 +553,17 @@ function createPond() {
 
 function createDiner() {
   const diner = new THREE.Group();
-  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(7.2, 2.6, 4.2), lambert(0xe8d8c0)));
+  const body = addShadow(
+    new THREE.Mesh(
+      new THREE.BoxGeometry(7.2, 2.6, 4.2),
+      phong(0xf0e2cc, { shininess: 22, specular: 0x8a7a64 }),
+    ),
+  );
   body.position.y = 1.3;
   diner.add(body);
-  const roof = addShadow(new THREE.Mesh(new THREE.BoxGeometry(7.8, 0.22, 4.7), lambert(0xb03c2c)));
+  const roof = addShadow(
+    new THREE.Mesh(new THREE.BoxGeometry(7.8, 0.22, 4.7), phong(0xb03c2c, { shininess: 18 })),
+  );
   roof.position.y = 2.7;
   diner.add(roof);
   const stripe = new THREE.Mesh(new THREE.BoxGeometry(7.21, 0.18, 4.21), lambert(0xc45c2a));
@@ -533,7 +595,12 @@ function createLighthouse() {
   const base = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 1.2, 8), lambert(0x8a8074)));
   base.position.y = 0.6;
   light.add(base);
-  const lower = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.45, 6.2, 8), lambert(0xe8e0d4)));
+  const lower = addShadow(
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(1.15, 1.45, 6.2, 8),
+      phong(0xf0e8dc, { shininess: 22, specular: 0x8a7a64 }),
+    ),
+  );
   lower.position.y = 4.2;
   light.add(lower);
   const stripe = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.32, 1.6, 8), lambert(0xa24b3a)));
@@ -609,17 +676,24 @@ function createMesa() {
 
 function createChapel() {
   const group = new THREE.Group();
-  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.6, 5.2), lambert(0xe8e0d4)));
+  const body = addShadow(
+    new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 2.6, 5.2),
+      phong(0xf0e8dc, { shininess: 22, specular: 0x8a7a64 }),
+    ),
+  );
   body.position.y = 1.3;
   group.add(body);
-  const roof = addShadow(new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.8, 4), lambert(0x4a4038)));
+  const roof = addShadow(new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.8, 4), woodPhong(0x5a4a3c)));
   roof.position.y = 3.4;
   roof.rotation.y = Math.PI / 4;
   group.add(roof);
-  const steeple = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.2, 0.7), lambert(0xe8e0d4)));
+  const steeple = addShadow(
+    new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.2, 0.7), phong(0xf0e8dc, { shininess: 22 })),
+  );
   steeple.position.set(0, 3.6, -1.8);
   group.add(steeple);
-  const spire = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.3, 4), lambert(0x3d2a22)));
+  const spire = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.3, 4), woodPhong(0x3d2a22)));
   spire.position.set(0, 5.1, -1.8);
   group.add(spire);
   return group;
@@ -681,8 +755,8 @@ function createReed() {
 
 function createFenceRun(length = 9.5) {
   const group = new THREE.Group();
-  const postMat = lambert(0x4a382c);
-  const railMat = lambert(0x5a4030);
+  const postMat = woodPhong(0x4a382c);
+  const railMat = woodPhong(0x5a4030);
   const posts = 3;
   const spacing = length / (posts - 1);
   for (let i = 0; i < posts; i += 1) {
@@ -747,109 +821,106 @@ export function createMailTruck() {
 
 export function createDeer() {
   const deer = new THREE.Group();
-  const hide = lambert(0x8a5a32);
-  const hideDark = lambert(0x6a4228);
+  const hide = lambert(0x9a6238);
+  const hideDark = lambert(0x6e4324);
   const dark = lambert(0x3a281c);
-  const cream = lambert(0xe8dcc8);
-  const antlerMat = lambert(0xd4c4a0);
-  const hoofMat = lambert(0x2a2018);
+  const cream = new THREE.MeshLambertMaterial({
+    color: 0xf7f0e4,
+    emissive: 0xe8dcc8,
+    emissiveIntensity: 0.22,
+  });
+  const hoofMat = lambert(0x1c1612);
 
-  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.38, 1.02), hide));
-  body.position.set(0, 1.22, 0.02);
+  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 1.14), hide));
+  body.position.set(0, 1.18, 0.04);
   deer.add(body);
 
-  const chest = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.22, 6, 5), hide));
-  chest.position.set(0, 1.16, -0.42);
-  chest.scale.set(0.7, 0.88, 1.05);
+  const chest = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.28, 6, 5), hide));
+  chest.position.set(0, 1.12, -0.44);
+  chest.scale.set(0.74, 0.9, 1.08);
   deer.add(chest);
 
-  const rump = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.34, 0.36), hide));
-  rump.position.set(0, 1.24, 0.5);
+  const rump = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.3, 6, 5), hide));
+  rump.position.set(0, 1.2, 0.5);
+  rump.scale.set(0.82, 0.84, 0.98);
   deer.add(rump);
 
-  const patch = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.1), cream);
-  patch.position.set(0, 1.32, 0.66);
+  const patch = new THREE.Mesh(new THREE.CircleGeometry(0.26, 10), cream);
+  patch.position.set(0, 1.26, 0.9);
   deer.add(patch);
+  const patchSide = new THREE.Mesh(new THREE.CircleGeometry(0.18, 8), cream);
+  patchSide.position.set(0.16, 1.24, 0.72);
+  patchSide.rotation.y = 0.9;
+  deer.add(patchSide);
+
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.26, 0.1), cream);
+  tail.position.set(0, 1.48, 0.92);
+  tail.rotation.x = 0.42;
+  deer.add(tail);
 
   const headRig = new THREE.Group();
-  headRig.position.set(0, 1.28, -0.46);
+  headRig.position.set(0, 1.22, -0.48);
   deer.add(headRig);
 
-  const neck = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.11, 0.78, 5), hide));
-  neck.position.set(0, 0.28, -0.26);
-  neck.rotation.x = 0.72;
+  const neck = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.15, 0.86, 5), hide));
+  neck.position.set(0, 0.34, -0.3);
+  neck.rotation.x = 0.58;
   headRig.add(neck);
 
-  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.14, 0.28), hideDark));
-  head.position.set(0, 0.6, -0.54);
+  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.34), hideDark));
+  head.position.set(0, 0.7, -0.6);
   headRig.add(head);
 
-  const snout = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.22), hideDark));
-  snout.position.set(0, 0.54, -0.76);
+  const snout = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.26), hideDark));
+  snout.position.set(0, 0.64, -0.82);
   headRig.add(snout);
 
-  const nose = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.045, 0.04), dark);
-  nose.position.set(0, 0.52, -0.88);
+  const nose = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.055, 0.05), dark);
+  nose.position.set(0, 0.62, -0.96);
   headRig.add(nose);
 
-  for (const x of [-0.09, 0.09]) {
-    const ear = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.22, 4), hide));
-    ear.position.set(x, 0.78, -0.42);
-    ear.rotation.x = -0.58;
-    ear.rotation.z = x > 0 ? 0.62 : -0.62;
+  for (const x of [-0.11, 0.11]) {
+    const ear = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.28, 4), hide));
+    ear.position.set(x, 0.92, -0.48);
+    ear.rotation.x = -0.5;
+    ear.rotation.z = x > 0 ? 0.52 : -0.52;
     headRig.add(ear);
   }
 
-  for (const side of [-1, 1]) {
-    const beam = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.028, 0.7, 4), antlerMat));
-    beam.position.set(side * 0.06, 0.98, -0.44);
-    beam.rotation.z = side * 0.34;
-    beam.rotation.x = -0.38;
-    headRig.add(beam);
-
-    const tine = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.018, 0.38, 4), antlerMat));
-    tine.position.set(side * 0.24, 1.18, -0.34);
-    tine.rotation.z = side * 1.15;
-    tine.rotation.x = -0.06;
-    headRig.add(tine);
-
-    const tine2 = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.014, 0.28, 4), antlerMat));
-    tine2.position.set(side * 0.09, 1.22, -0.62);
-    tine2.rotation.x = 0.95;
-    headRig.add(tine2);
-
-    const tine3 = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.012, 0.22, 4), antlerMat));
-    tine3.position.set(side * 0.18, 1.3, -0.5);
-    tine3.rotation.z = side * 0.48;
-    tine3.rotation.x = 0.3;
-    headRig.add(tine3);
-  }
-
   for (const [x, z, rear] of [
-    [-0.085, -0.38, false],
-    [0.085, -0.38, false],
-    [-0.095, 0.42, true],
-    [0.095, 0.42, true],
+    [-0.12, -0.36, false],
+    [0.12, -0.36, false],
+    [-0.13, 0.46, true],
+    [0.13, 0.46, true],
   ]) {
-    const upper = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.54, 0.055), hideDark));
-    upper.position.set(x, 0.88, z);
-    upper.rotation.x = rear ? 0.16 : -0.12;
+    const upper = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.54, 0.09), hideDark));
+    upper.position.set(x, 0.86, z);
+    upper.rotation.x = rear ? 0.14 : -0.1;
     deer.add(upper);
 
-    const lowerZ = z + (rear ? 0.12 : -0.1);
-    const lower = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.5, 0.04), dark));
+    const lowerZ = z + (rear ? 0.1 : -0.08);
+    const lower = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.5, 0.07), dark));
     lower.position.set(x, 0.38, lowerZ);
     deer.add(lower);
 
-    const hoof = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.1), hoofMat);
+    const hoof = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.13), hoofMat);
     hoof.position.set(x, 0.1, lowerZ + (rear ? 0.02 : -0.02));
     deer.add(hoof);
   }
 
-  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), cream);
-  tail.position.set(0, 1.38, 0.7);
-  tail.rotation.x = 0.5;
-  deer.add(tail);
+  const shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.2, 1.7),
+    new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.28,
+      depthWrite: false,
+    }),
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.05;
+  shadow.renderOrder = -1;
+  deer.add(shadow);
 
   deer.userData.kind = 'deer';
   deer.userData.head = headRig;
@@ -1046,10 +1117,10 @@ export function populateScenery(scenery, theme) {
     }
   }
 
-  for (let i = 0; i < 8; i += 1) {
+  for (let i = 0; i < 10; i += 1) {
     const tuft = createTuft(theme.foliage[i % theme.foliage.length]);
     const side = i % 2 === 0 ? -1 : 1;
-    place(tuft, side * (7.2 + (i % 5) * 1.1), -136 + i * 18, 160, 14);
+    place(tuft, side * (7.25 + (i % 5) * 1.15), -138 + i * 16, 160, 14);
   }
 
   for (let i = 0; i < 4; i += 1) {
@@ -1084,9 +1155,9 @@ export function populateScenery(scenery, theme) {
   movers.push({ obj: landmarkA, far: 170, near: 24, speed: 1 });
 
   const landmarkB = createLandmark(theme.landmark);
-  landmarkB.position.set(26, 0, -108);
+  landmarkB.position.set(32, 0, -128);
   landmarkB.rotation.y = 0.45;
-  landmarkB.scale.setScalar(theme.landmark === 'lighthouse' || theme.landmark === 'mesa' ? 1.15 : 0.9);
+  landmarkB.scale.setScalar(theme.landmark === 'lighthouse' || theme.landmark === 'mesa' ? 0.88 : 0.68);
   scenery.add(landmarkB);
   movers.push({ obj: landmarkB, far: 170, near: 24, speed: 1 });
 
