@@ -4,7 +4,7 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-_pending draft URL_  
+https://github.com/andrewkittridge/sunday-drive/pull/8 (draft)  
 Base: `main` @ `8c12073` (wave 6). Head: `wave/7-mobile`.
 
 ## Thesis
