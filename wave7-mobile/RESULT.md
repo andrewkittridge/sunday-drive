@@ -4,8 +4,8 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-https://github.com/andrewkittridge/sunday-drive/pull/8 landed the first pass and was merged to `main`.  
-This follow-up is a **draft** PR against `main` for remaining bar nits (collapsed chrome, Larger type sheet, landscape destination).
+https://github.com/andrewkittridge/sunday-drive/pull/9 (draft)  
+PR #8 landed the first pass and was merged to `main`. This follow-up is remaining bar nits (collapsed chrome, Larger type sheet, landscape destination).
 
 Base: `main` (wave 6 + PR 8). Head: `wave/7-mobile`.
 
