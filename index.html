@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Sunday Drive</title>
     <meta name="description" content="A quiet weekend car. Miles while you are away." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23C45C2A'/%3E%3Cpath fill='%23F7E7C7' d='M6 20h20l-2-6H8z'/%3E%3Ccircle cx='10' cy='22' r='2.2' fill='%232A2118'/%3E%3Ccircle cx='22' cy='22' r='2.2' fill='%232A2118'/%3E%3C/svg%3E" />
@@ -32,6 +32,13 @@
               Sound on
             </button>
             <button type="button" id="save-file" class="ghost">Save file</button>
+            <button type="button" id="postcards" class="ghost">Postcards</button>
+            <button type="button" id="large-type" class="ghost" aria-pressed="false">
+              Larger type
+            </button>
+            <button type="button" id="reduce-motion" class="ghost" aria-pressed="false">
+              Less motion
+            </button>
           </div>
         </div>
       </header>
@@ -46,11 +53,21 @@
 
         <div class="drive-wrap">
           <button type="button" id="drive" class="drive">Drive</button>
-          <p class="hint">Click or press Space</p>
+          <p class="hint" id="drive-hint">Click or press Space</p>
         </div>
       </main>
 
-      <aside class="panel" aria-label="Upgrades">
+      <button
+        type="button"
+        id="panel-toggle"
+        class="panel-toggle"
+        aria-expanded="false"
+        aria-controls="car-panel"
+      >
+        The car
+      </button>
+
+      <aside class="panel" id="car-panel" aria-label="Upgrades">
         <h2>The car</h2>
         <p class="panel-lead">Spend miles. The road gets easier.</p>
         <div id="upgrades" class="upgrades"></div>

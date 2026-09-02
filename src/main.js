@@ -8,6 +8,7 @@ import {
   formatMiles,
   formatMultiplier,
   formatRate,
+  isCollected,
   parseSaveText,
 } from './game.js';
 import { createWorld } from './scene.js';
@@ -26,11 +27,30 @@ if (shotId) {
   if (idx >= 0) game.destinationIndex = idx;
 }
 
+if (params.has('souvenirs')) {
+  const n = Number(params.get('souvenirs'));
+  if (Number.isFinite(n) && n >= 0) {
+    game.souvenirs = Math.floor(n);
+    if (!params.get('shot')) {
+      game.destinationIndex = game.souvenirs % DESTINATIONS.length;
+    }
+  }
+}
+if (params.get('large') === '1') game.largeType = true;
+if (params.get('motion') === '0') game.reduceMotion = true;
+if (params.get('motion') === '1') game.reduceMotion = false;
+
 const world = createWorld(document.getElementById('gl'));
 world.applyRoute(game.destination.id);
-if (params.has('time')) {
+if (params.has('phase')) {
+  const p = Number(params.get('phase'));
+  if (Number.isFinite(p)) world.setPhase(p);
+} else if (params.has('time')) {
   const t = Number(params.get('time'));
   if (Number.isFinite(t)) world.setTime(t);
+}
+if (params.has('event')) {
+  world.forceEvent(params.get('event'));
 }
 
 const els = {
@@ -41,8 +61,13 @@ const els = {
   souvenir: document.getElementById('souvenir'),
   mute: document.getElementById('mute'),
   saveFile: document.getElementById('save-file'),
+  postcards: document.getElementById('postcards'),
+  largeType: document.getElementById('large-type'),
+  reduceMotion: document.getElementById('reduce-motion'),
+  panelToggle: document.getElementById('panel-toggle'),
   saveInput: document.getElementById('save-input'),
   drive: document.getElementById('drive'),
+  driveHint: document.getElementById('drive-hint'),
   upgrades: document.getElementById('upgrades'),
   prestige: document.getElementById('prestige'),
   prestigeHint: document.getElementById('prestige-hint'),
@@ -88,6 +113,21 @@ function syncMute() {
   audio.setMuted(game.muted);
 }
 
+function syncComfort() {
+  document.body.classList.toggle('large-type', game.largeType);
+  document.body.classList.toggle('reduce-motion', game.reduceMotion);
+  els.largeType.setAttribute('aria-pressed', String(game.largeType));
+  els.largeType.textContent = game.largeType ? 'Larger type on' : 'Larger type';
+  els.reduceMotion.setAttribute('aria-pressed', String(game.reduceMotion));
+  els.reduceMotion.textContent = game.reduceMotion ? 'Less motion on' : 'Less motion';
+}
+
+function setPanelOpen(open) {
+  document.body.classList.toggle('panel-open', open);
+  els.panelToggle.setAttribute('aria-expanded', String(open));
+  els.panelToggle.textContent = open ? 'The car · hide' : 'The car';
+}
+
 function syncHud() {
   els.miles.textContent = formatMiles(game.miles);
   els.rate.textContent = `${formatRate(game.passiveRate)} · ${formatMiles(game.clickPower)} per Drive`;
@@ -96,6 +136,7 @@ function syncHud() {
   els.souvenir.textContent = souvenirLine();
   document.body.dataset.destination = game.destination.id;
   document.body.dataset.muted = String(game.muted);
+  document.body.dataset.weather = world.getLook()?.weather || '';
 
   const ready = game.prestigeReady;
   els.prestige.disabled = !ready;
@@ -156,6 +197,7 @@ function flushToasts() {
 function closeModal() {
   els.modal.hidden = true;
   els.modalActions.replaceChildren();
+  els.modal.querySelector('.modal-card')?.classList.remove('gallery-card');
   els.drive.focus();
 }
 
@@ -245,6 +287,62 @@ function toggleMute() {
   game.save();
 }
 
+function toggleLargeType() {
+  game.largeType = !game.largeType;
+  syncComfort();
+  game.save();
+}
+
+function toggleReduceMotion() {
+  game.reduceMotion = !game.reduceMotion;
+  syncComfort();
+  game.save();
+}
+
+function galleryHtml() {
+  const kept = Math.min(game.souvenirs, DESTINATIONS.length);
+  const cards = DESTINATIONS.map((dest) => {
+    const have = isCollected(game.souvenirs, dest.id);
+    if (!have) {
+      return `
+        <article class="postcard empty">
+          <div class="postcard-art" aria-hidden="true"></div>
+          <h3>Not yet</h3>
+          <p>${dest.name}</p>
+        </article>
+      `;
+    }
+    return `
+      <article class="postcard collected">
+        <span class="stamp" aria-hidden="true"></span>
+        <div class="postcard-art art-${dest.id}" aria-hidden="true"></div>
+        <h3>${dest.name}</h3>
+        <p>${dest.souvenir}</p>
+      </article>
+    `;
+  }).join('');
+  const lead =
+    kept === 0
+      ? 'No roads remembered yet. Park at a destination to keep a postcard.'
+      : kept === 1
+        ? 'One road remembered.'
+        : `${kept} of ${DESTINATIONS.length} roads remembered.`;
+  return `
+    <p class="gallery-lead">Pieces of places worth remembering.</p>
+    <p class="gallery-count">${lead}</p>
+    <div class="postcards">${cards}</div>
+  `;
+}
+
+function openGallery() {
+  showModal({
+    title: 'Souvenir postcards',
+    bodyHtml: galleryHtml(),
+    actions: [{ label: 'Close', primary: true, onClick: closeModal }],
+  });
+  els.modal.querySelector('.modal-card')?.classList.add('gallery-card');
+}
+
 function downloadSave() {
   game.save();
   const blob = new Blob([game.exportText()], { type: 'application/json' });
@@ -305,6 +403,7 @@ function confirmImport(data) {
           audio.setMuted(game.muted);
           audio.sync(game);
           syncMute();
+          syncComfort();
           closeModal();
           showToast(`Loaded ${preview.destination.name} · ${formatMiles(preview.miles)} miles.`);
           syncHud();
@@ -353,6 +452,12 @@ function openSaveModal() {
 
 els.drive.addEventListener('click', drive);
 els.mute.addEventListener('click', toggleMute);
+els.postcards.addEventListener('click', openGallery);
+els.largeType.addEventListener('click', toggleLargeType);
+els.reduceMotion.addEventListener('click', toggleReduceMotion);
+els.panelToggle.addEventListener('click', () => {
+  setPanelOpen(!document.body.classList.contains('panel-open'));
+});
 els.prestige.addEventListener('click', confirmPrestige);
 els.saveFile.addEventListener('click', openSaveModal);
 els.saveInput.addEventListener('change', async (event) => {
@@ -397,8 +502,19 @@ if (hideHud) {
   document.getElementById('hud').hidden = true;
 }
 
+if (params.get('gallery') === '1') {
+  game.welcomed = true;
+  window.setTimeout(() => openGallery(), 80);
+}
+
+if (window.matchMedia?.('(pointer: coarse)')?.matches && els.driveHint) {
+  els.driveHint.textContent = 'Tap Drive';
+}
+
 renderUpgrades();
 syncMute();
+syncComfort();
+setPanelOpen(params.get('panel') === '1');
 syncHud();
 
 const offline = captureMode ? null : game.applyOffline();

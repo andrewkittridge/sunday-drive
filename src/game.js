@@ -84,6 +84,20 @@ export const UPGRADES = [
 const UPGRADE_IDS = UPGRADES.map((u) => u.id);
 export const SOUVENIR_BONUS = 0.15;
 
+function osPrefersReducedMotion() {
+  try {
+    return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  } catch {
+    return false;
+  }
+}
+
+export function isCollected(souvenirs, destId) {
+  if (souvenirs >= DESTINATIONS.length) return true;
+  const idx = DESTINATIONS.findIndex((d) => d.id === destId);
+  return idx >= 0 && idx < souvenirs;
+}
+
 function emptyLevels() {
   return Object.fromEntries(UPGRADE_IDS.map((id) => [id, 0]));
 }
@@ -176,6 +190,12 @@ export function validateSave(data) {
   if (data.muted != null && typeof data.muted !== 'boolean') {
     return 'That save looks damaged. Nothing was changed.';
   }
+  if (data.reduceMotion != null && typeof data.reduceMotion !== 'boolean') {
+    return 'That save looks damaged. Nothing was changed.';
+  }
+  if (data.largeType != null && typeof data.largeType !== 'boolean') {
+    return 'That save looks damaged. Nothing was changed.';
+  }
   return null;
 }
 
@@ -202,6 +222,8 @@ export class Game {
     this.souvenirs = 0;
     this.destinationIndex = 0;
     this.muted = false;
+    this.reduceMotion = osPrefersReducedMotion();
+    this.largeType = false;
     this.seenUnlocks = {};
     this.seenMiles = {};
     this.milestones = { prestigeReady: false };
@@ -400,6 +422,8 @@ export class Game {
       souvenirs: this.souvenirs,
       destinationIndex: this.destinationIndex,
       muted: this.muted,
+      reduceMotion: this.reduceMotion,
+      largeType: this.largeType,
       seenUnlocks: { ...this.seenUnlocks },
       seenMiles: { ...this.seenMiles },
       milestones: { ...this.milestones },
@@ -425,6 +449,9 @@ export class Game {
       Math.floor(clampNum(data.destinationIndex, 0, DESTINATIONS.length * 40)) %
       DESTINATIONS.length;
     this.muted = Boolean(data.muted);
+    this.reduceMotion =
+      typeof data.reduceMotion === 'boolean' ? data.reduceMotion : osPrefersReducedMotion();
+    this.largeType = Boolean(data.largeType);
     this.seenUnlocks = { ...(data.seenUnlocks || {}) };
     this.seenMiles = { ...(data.seenMiles || {}) };
     if (!data.seenMiles) {
@@ -460,8 +487,12 @@ export class Game {
     const error = validateSave(data);
     if (error) return { ok: false, error };
     const muted = this.muted;
+    const reduceMotion = this.reduceMotion;
+    const largeType = this.largeType;
     this.hydrate(data);
     if (preserveMute) this.muted = muted;
+    this.reduceMotion = reduceMotion;
+    this.largeType = largeType;
     this.lastSaved = Date.now();
     this.driveImpulse = 0;
     this.offlineReport = null;
