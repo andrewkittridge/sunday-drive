@@ -219,7 +219,7 @@ function createCar() {
     }),
   );
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.05;
+  shadow.position.y = 0.1;
   shadow.scale.set(1, 2.2, 1);
   car.add(shadow);
 
@@ -253,7 +253,7 @@ export function createWorld(canvas) {
   const camera = new THREE.PerspectiveCamera(
     52,
     window.innerWidth / window.innerHeight,
-    0.1,
+    0.6,
     420,
   );
 
@@ -343,21 +343,34 @@ export function createWorld(canvas) {
   roadTex.repeat.set(1, 52);
   const road = new THREE.Mesh(
     new THREE.PlaneGeometry(8.4, 280),
-    new THREE.MeshLambertMaterial({ map: roadTex }),
+    new THREE.MeshLambertMaterial({
+      map: roadTex,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    }),
   );
   road.rotation.x = -Math.PI / 2;
-  road.position.y = 0.03;
+  road.position.y = 0.08;
   road.receiveShadow = true;
   scene.add(road);
 
-  const shoulderMat = new THREE.MeshLambertMaterial({ color: 0x9a8a6a });
+  const shoulderMat = new THREE.MeshLambertMaterial({
+    color: 0x9a8a6a,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
+  });
   for (const x of [-5.15, 5.15]) {
     const shoulder = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 280), shoulderMat);
     shoulder.rotation.x = -Math.PI / 2;
-    shoulder.position.set(x, 0.02, 0);
+    shoulder.position.set(x, 0.04, 0);
     shoulder.receiveShadow = true;
     scene.add(shoulder);
   }
+
+  // Keep the inner edge of each ellipsoid outside the paved corridor (|x| < ~6.1).
+  const HILL_INNER = 12;
 
   function addHill(x, z, radius, color) {
     const mesh = new THREE.Mesh(
@@ -367,16 +380,25 @@ export function createWorld(canvas) {
     mesh.position.set(x, radius * 0.12, z);
     mesh.scale.set(1.75, 0.34, 1.15);
     mesh.receiveShadow = true;
+    mesh.userData.hillRadius = radius;
+    mesh.userData.baseX = x;
     scene.add(mesh);
     return mesh;
   }
 
+  function seatHill(hill, scale) {
+    hill.scale.set(scale[0], scale[1], scale[2]);
+    const extentX = hill.userData.hillRadius * scale[0];
+    const absX = Math.max(Math.abs(hill.userData.baseX), HILL_INNER + extentX);
+    hill.position.x = Math.sign(hill.userData.baseX || -1) * absX;
+  }
+
   const hills = [
-    addHill(-40, -78, 22, 0x7e925c),
-    addHill(44, -92, 26, 0x8a9a68),
-    addHill(-56, -118, 32, 0x6f8454),
-    addHill(28, -128, 20, 0x9aa574),
-    addHill(-18, -150, 24, 0x7a8d5e),
+    addHill(-58, -78, 22, 0x7e925c),
+    addHill(62, -92, 26, 0x8a9a68),
+    addHill(-74, -118, 32, 0x6f8454),
+    addHill(56, -128, 20, 0x9aa574),
+    addHill(-60, -150, 24, 0x7a8d5e),
   ];
 
   const clouds = [];
@@ -447,7 +469,7 @@ export function createWorld(canvas) {
 
     hills.forEach((hill, i) => {
       hill.material.color.setHex(theme.hills[i % theme.hills.length]);
-      hill.scale.set(theme.hillScale[0], theme.hillScale[1], theme.hillScale[2]);
+      seatHill(hill, theme.hillScale);
     });
 
     clearGroup(scenery);
