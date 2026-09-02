@@ -1,14 +1,14 @@
 :root {
-  --ink: #f7e7c7;
-  --ink-dim: #d7c4a0;
-  --paper: rgba(36, 24, 16, 0.72);
-  --paper-strong: rgba(28, 18, 12, 0.86);
-  --line: rgba(247, 231, 199, 0.16);
+  --ink: #f8ead0;
+  --ink-dim: #d9c6a4;
+  --paper: rgba(38, 24, 14, 0.68);
+  --paper-strong: rgba(30, 20, 12, 0.84);
+  --line: rgba(248, 234, 208, 0.15);
   --gold: #e8a04a;
   --terra: #c45c2a;
   --terra-deep: #9a3d18;
   --good: #c9e39a;
-  --shadow: 0 18px 40px rgba(20, 10, 4, 0.35);
+  --shadow: 0 18px 40px rgba(20, 10, 4, 0.32);
   --sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --display: "Fraunces", Georgia, "Times New Roman", serif;
 }
@@ -56,11 +56,11 @@ input {
 }
 
 .vignette {
-  background: radial-gradient(ellipse at center, transparent 52%, rgba(28, 14, 6, 0.32) 100%);
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(28, 14, 6, 0.22) 100%);
 }
 
 .grain {
-  opacity: 0.055;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 }
 
