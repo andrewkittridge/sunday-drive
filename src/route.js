@@ -675,10 +675,18 @@ export function clearGroup(group) {
   }
 }
 
+// Road plane is 8.4 wide; dirt shoulders extend to about |x| = 6.1.
+const ROADSIDE_X = 6.7;
+
+function offRoadX(x, minAbs = ROADSIDE_X) {
+  const sign = x < 0 ? -1 : 1;
+  return sign * Math.max(Math.abs(x), minAbs);
+}
+
 export function populateScenery(scenery, theme) {
   const movers = [];
-  function place(object, x, z, far = 170, near = 18, speed = 1) {
-    object.position.x = x;
+  function place(object, x, z, far = 170, near = 18, speed = 1, minAbsX = ROADSIDE_X) {
+    object.position.x = offRoadX(x, minAbsX);
     object.position.z = z;
     scenery.add(object);
     movers.push({ obj: object, far, near, speed });
@@ -703,7 +711,7 @@ export function populateScenery(scenery, theme) {
       for (const side of [-1, 1]) {
         const post = addShadow(new THREE.Mesh(postGeo, postMat));
         post.position.y = 0.52;
-        place(post, side * 4.55, -120 + i * gap, 150, 16);
+        place(post, side * 6.55, -120 + i * gap, 150, 16);
       }
     }
   }
@@ -712,7 +720,7 @@ export function populateScenery(scenery, theme) {
     for (let i = 0; i < 22; i += 1) {
       const reed = createReed();
       const side = i % 2 === 0 ? -1 : 1;
-      place(reed, side * (6.2 + (i % 4) * 1.4), -130 + i * 11, 160, 16);
+      place(reed, side * (7.1 + (i % 4) * 1.4), -130 + i * 11, 160, 16);
     }
   }
 
@@ -720,12 +728,12 @@ export function populateScenery(scenery, theme) {
     for (let i = 0; i < 10; i += 1) {
       const lamp = createLampPost();
       const side = i % 2 === 0 ? -1 : 1;
-      place(lamp, side * 5.4, -110 + i * 18, 170, 16);
+      place(lamp, side * 6.35, -110 + i * 18, 170, 16);
     }
     for (let i = 0; i < 8; i += 1) {
       const mail = createMailbox();
       const side = i % 2 === 0 ? -1 : 1;
-      place(mail, side * 5.05, -90 + i * 22, 160, 14);
+      place(mail, side * 6.25, -90 + i * 22, 160, 14);
     }
   }
 
@@ -734,7 +742,7 @@ export function populateScenery(scenery, theme) {
       const dune = createDune();
       const side = i % 2 === 0 ? -1 : 1;
       dune.scale.x *= 1 + (i % 3) * 0.2;
-      place(dune, side * (11 + (i % 3) * 3), -130 + i * 16, 170, 20, 0.9);
+      place(dune, side * (16 + (i % 3) * 3), -130 + i * 16, 170, 20, 0.9, 16);
     }
   }
 
@@ -766,20 +774,20 @@ export function populateScenery(scenery, theme) {
   for (let i = 0; i < 20; i += 1) {
     const tuft = createTuft(theme.foliage[i % theme.foliage.length]);
     const side = i % 2 === 0 ? -1 : 1;
-    place(tuft, side * (5.6 + (i % 6) * 0.85), -140 + i * 12.5, 160, 14);
+    place(tuft, side * (6.9 + (i % 6) * 0.85), -140 + i * 12.5, 160, 14);
   }
 
   for (let i = 0; i < 10; i += 1) {
     const rock = createRock();
     const side = i % 2 === 0 ? -1 : 1;
-    place(rock, side * (6.4 + (i % 4) * 1.6), -100 + i * 17, 160, 14);
+    place(rock, side * (7.2 + (i % 4) * 1.6), -100 + i * 17, 160, 14);
   }
 
   const flowerColors = [0xc45c2a, 0xe8d48a, 0xd8c8e0, 0xe8a04a];
   for (let i = 0; i < 8; i += 1) {
     const flowers = createWildflowers(flowerColors[i % flowerColors.length]);
     const side = i % 2 === 0 ? -1 : 1;
-    place(flowers, side * (6.8 + (i % 3) * 1.2), -80 + i * 21, 160, 14);
+    place(flowers, side * (7.4 + (i % 3) * 1.2), -80 + i * 21, 160, 14);
   }
 
   for (let i = 0; i < 4; i += 1) {
@@ -792,7 +800,7 @@ export function populateScenery(scenery, theme) {
     board.position.y = 1.7;
     sign.add(board);
     const side = i % 2 === 0 ? -1 : 1;
-    place(sign, side * 5.8, -60 + i * 40, 170, 16);
+    place(sign, side * 6.8, -60 + i * 40, 170, 16);
   }
 
   const landmarkA = createLandmark(theme.landmark);
