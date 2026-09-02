@@ -1,5 +1,8 @@
 # Sunday Drive
 
+**Live:** https://sunday-drive-ten.vercel.app  
+**Repo:** https://github.com/andrewkittridge/sunday-drive
+
 A cozy Three.js idle. You own a quiet weekend car. Miles accrue while you are away. Spend them on diner stops, mixtapes, tires, and thermos coffee. Prestige is a new destination and a permanent souvenir bonus.
 
 Local draft only — no accounts, ads, or deploy.

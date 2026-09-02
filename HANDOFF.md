@@ -19,3 +19,10 @@
 - Andrew: commit and deploy
 - Owner: Engineer
 - Goal: GitHub repo + Vercel production URL
+
+## Shipped 2026-09-02
+- Repo: https://github.com/andrewkittridge/sunday-drive
+- Commit: 08c2aa2 (initial); README live URL may follow
+- Production: https://sunday-drive-ten.vercel.app
+- Vercel project andrewkittridges-projects/sunday-drive linked to GitHub (main auto-deploys)
+- No app env vars required (client-only localStorage)
