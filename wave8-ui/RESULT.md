@@ -4,7 +4,8 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-Draft against `main` @ `e79031f` (wave 7). Head: `wave/8-ui-chrome`. URL recorded after open.
+https://github.com/andrewkittridge/sunday-drive/pull/10 (draft)  
+Base: `main` @ `e79031f` (wave 7). Head: `wave/8-ui-chrome`.
 
 ## Thesis
 
