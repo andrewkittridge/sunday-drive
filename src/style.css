@@ -76,7 +76,7 @@ input {
   height: 100%;
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 1fr minmax(300px, 400px);
+  grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
   gap: 1rem;
   padding: max(1rem, var(--safe-top))
@@ -102,21 +102,24 @@ input {
 .brand h1 {
   margin: 0;
   font-family: var(--display);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-size: clamp(1.28rem, 2vw, 1.7rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   text-shadow: 0 2px 16px rgba(20, 10, 4, 0.45);
 }
 
 .brand p {
-  margin: 0.2rem 0 0;
-  font-size: 1.25rem;
+  margin: 0.15rem 0 0;
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-weight: 600;
   color: var(--ink);
+  text-shadow: 0 2px 14px rgba(20, 10, 4, 0.4);
 }
 
 .souvenir {
   margin: 0.15rem 0 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--ink-dim);
 }
 
@@ -124,14 +127,84 @@ input {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.55rem;
+  gap: 0.4rem;
 }
 
-.top-buttons {
+.menu-wrap {
+  position: relative;
+  z-index: 4;
+}
+
+.menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.menu-bars {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.45rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  width: 0.95rem;
+}
+
+.menu-bars span {
+  display: block;
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.menu-panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  min-width: 13.75rem;
+  max-width: min(18rem, calc(100vw - 2rem));
+  max-height: min(70dvh, 28rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.menu-panel[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+  color: var(--ink);
+  background: transparent;
+  border-radius: 0.75rem;
+  min-height: 48px;
+  padding: 0.55rem 0.85rem;
+  font-size: 1.05rem;
+}
+
+.menu-item:focus-visible {
+  background: rgba(255, 244, 220, 0.12);
+  outline: 2px solid var(--gold);
+  outline-offset: 0;
+}
+
+@media (hover: hover) {
+  .menu-item:hover {
+    background: rgba(255, 244, 220, 0.12);
+  }
 }
 
 .ghost,
@@ -141,6 +214,12 @@ input {
 .modal-actions button {
   border: 0;
   cursor: pointer;
+}
+
+.ghost,
+.upgrade,
+.prestige,
+.modal-actions button {
   color: var(--ink);
 }
 
@@ -168,24 +247,34 @@ input {
 }
 
 .panel-toggle {
-  display: none;
+  display: block;
   border: 0;
   cursor: pointer;
   color: var(--ink);
-  background: var(--paper-strong);
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 0.9rem;
   min-height: 48px;
-  padding: 0.7rem 1.1rem;
+  width: min(100%, 22rem);
+  margin-top: 0.7rem;
+  padding: 0.65rem 1.1rem;
   font-family: var(--display);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  box-shadow: var(--shadow);
+  box-shadow: 0 10px 24px rgba(20, 10, 4, 0.22);
 }
 
 .panel-toggle:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .panel-toggle:hover {
+    background: var(--paper-strong);
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
 }
 
 .stage {
@@ -235,21 +324,23 @@ input {
 }
 
 .drive-wrap {
-  margin-top: 1.4rem;
+  margin-top: 1.25rem;
   position: relative;
+  width: min(100%, 22rem);
 }
 
 .drive {
-  width: min(100%, 22rem);
+  width: 100%;
   min-height: 5.2rem;
   border-radius: 1.1rem;
-  background: linear-gradient(180deg, #d96a32, var(--terra) 55%, var(--terra-deep));
+  background: linear-gradient(180deg, #f7ebd4, #ead4ae 55%, #ddc496);
+  color: #3a2716;
   font-family: var(--display);
   font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   white-space: nowrap;
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: var(--shadow), 0 0 0 3px rgba(42, 26, 16, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .drive:focus-visible {
@@ -308,9 +399,13 @@ input {
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
   align-self: stretch;
-  display: flex;
+  display: none;
   flex-direction: column;
   min-height: 0;
+}
+
+body.panel-open .panel {
+  display: flex;
 }
 
 .panel h2 {
@@ -566,16 +661,55 @@ input {
   background: transparent;
 }
 
+@media (min-width: 901px) {
+  #hud {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    padding: max(1.15rem, var(--safe-top))
+      max(1.5rem, var(--safe-right))
+      max(1.2rem, var(--safe-bottom))
+      max(1.5rem, var(--safe-left));
+  }
+
+  .stage {
+    grid-column: 1;
+    grid-row: 2;
+    padding-bottom: 0.35rem;
+  }
+
+  .panel {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: end;
+    width: min(22rem, 32vw);
+    max-width: 22rem;
+    z-index: 3;
+  }
+}
+
+@media (min-width: 1400px) {
+  #hud {
+    padding: max(1.35rem, var(--safe-top))
+      max(1.85rem, var(--safe-right))
+      max(1.35rem, var(--safe-bottom))
+      max(1.85rem, var(--safe-left));
+    gap: 1.15rem;
+  }
+
+  .panel {
+    width: min(22rem, 28vw);
+  }
+}
+
 @media (max-width: 900px) {
   #hud {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto auto auto;
+    grid-template-rows: auto 1fr auto auto;
     grid-template-areas:
       "topbar"
       "scene"
       "panel"
-      "toggle"
       "stage";
     gap: 0.45rem;
     overflow: hidden;
@@ -592,9 +726,8 @@ input {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "wordmark souvenir"
-      "dest dest"
-      "buttons buttons";
+      "wordmark menu"
+      "dest souvenir";
     flex-shrink: 0;
     align-items: center;
     gap: 0.28rem 0.65rem;
@@ -628,15 +761,19 @@ input {
 
   .souvenir {
     grid-area: souvenir;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     margin: 0;
     text-align: right;
+    align-self: center;
+    max-width: 42vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .top-buttons {
-    grid-area: buttons;
-    justify-content: flex-start;
-    max-width: none;
+  .menu-wrap {
+    grid-area: menu;
+    justify-self: end;
   }
 
   .ghost {
@@ -656,16 +793,20 @@ input {
   .drive-wrap {
     margin-top: 0.55rem;
     flex-shrink: 0;
+    width: 100%;
   }
 
   .panel-toggle {
     display: block;
-    grid-area: toggle;
-    order: 0;
+    order: -1;
     width: 100%;
     pointer-events: auto;
     margin-top: 0;
+    margin-bottom: 0.2rem;
     min-height: 48px;
+    background: var(--paper-strong);
+    font-size: 1.2rem;
+    box-shadow: var(--shadow);
   }
 
   .panel {
@@ -682,6 +823,14 @@ input {
   .panel-lead,
   .prestige-hint {
     display: none;
+  }
+
+  body.panel-open .stage {
+    display: contents;
+  }
+
+  body.panel-open .drive-wrap {
+    grid-area: stage;
   }
 
   body.panel-open .panel {
@@ -701,6 +850,7 @@ input {
     padding: 0.4rem 0.85rem;
     z-index: 3;
     font-size: 1.05rem;
+    order: 0;
   }
 
   body.panel-open .odometer,
@@ -890,6 +1040,10 @@ input {
     align-items: flex-end;
   }
 
+  .menu-wrap {
+    justify-self: auto;
+  }
+
   .brand h1 {
     font-size: clamp(1.05rem, 3.6vh, 1.3rem);
     white-space: nowrap;
@@ -900,12 +1054,6 @@ input {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .top-buttons {
-    max-width: none;
-    flex-wrap: wrap;
-    justify-content: flex-end;
   }
 
   .souvenir {
@@ -924,6 +1072,11 @@ input {
     margin-top: 0;
     flex-shrink: 0;
     pointer-events: auto;
+    width: 100%;
+  }
+
+  body.panel-open .drive-wrap {
+    grid-area: drive;
   }
 
   .panel {
@@ -1071,17 +1224,18 @@ body.large-type .upgrade .meta {
 }
 
 body.large-type .ghost,
+body.large-type .menu-item,
 body.large-type .panel-toggle,
 body.large-type .prestige {
   font-size: 1.15rem;
 }
 
 body.large-type .brand h1 {
-  font-size: clamp(2.1rem, 3.4vw, 3rem);
+  font-size: clamp(1.45rem, 2.4vw, 1.95rem);
 }
 
 body.large-type .brand p {
-  font-size: 1.4rem;
+  font-size: clamp(1.55rem, 2.6vw, 2.1rem);
 }
 
 body.large-type .modal-body {

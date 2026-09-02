@@ -27,18 +27,38 @@
         </div>
         <div class="top-actions">
           <p id="souvenir" class="souvenir">No souvenirs yet</p>
-          <div class="top-buttons">
-            <button type="button" id="mute" class="ghost" aria-pressed="false" title="Mute music and the car" aria-label="Sound on. Mutes the music and the car.">
-              Sound on
+          <div class="menu-wrap">
+            <button
+              type="button"
+              id="menu"
+              class="ghost menu-btn"
+              aria-expanded="false"
+              aria-controls="menu-panel"
+              aria-haspopup="true"
+            >
+              <span class="menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+              Menu
             </button>
-            <button type="button" id="save-file" class="ghost">Save file</button>
-            <button type="button" id="postcards" class="ghost">Postcards</button>
-            <button type="button" id="large-type" class="ghost" aria-pressed="false">
-              Larger type
-            </button>
-            <button type="button" id="reduce-motion" class="ghost" aria-pressed="false">
-              Less motion
-            </button>
+            <div id="menu-panel" class="menu-panel" hidden role="group" aria-label="Menu">
+              <button
+                type="button"
+                id="mute"
+                class="menu-item"
+                aria-pressed="false"
+                title="Mute music and the car"
+                aria-label="Sound on. Mutes the music and the car."
+              >
+                Sound on
+              </button>
+              <button type="button" id="save-file" class="menu-item">Save file</button>
+              <button type="button" id="postcards" class="menu-item">Postcards</button>
+              <button type="button" id="large-type" class="menu-item" aria-pressed="false">
+                Larger type
+              </button>
+              <button type="button" id="reduce-motion" class="menu-item" aria-pressed="false">
+                Less motion
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -55,17 +75,17 @@
           <button type="button" id="drive" class="drive">Drive</button>
           <p class="hint" id="drive-hint">Click or press Space</p>
         </div>
-      </main>
 
-      <button
-        type="button"
-        id="panel-toggle"
-        class="panel-toggle"
-        aria-expanded="false"
-        aria-controls="car-panel"
-      >
-        The car
-      </button>
+        <button
+          type="button"
+          id="panel-toggle"
+          class="panel-toggle"
+          aria-expanded="false"
+          aria-controls="car-panel"
+        >
+          The car
+        </button>
+      </main>
 
       <aside class="panel" id="car-panel" aria-label="Upgrades">
         <h2>The car</h2>
