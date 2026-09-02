@@ -8,6 +8,14 @@ import {
   themeFor,
 } from './route.js';
 
+// THREE.MathUtils.smoothstep is (x, min, max). Lighting wants GLSL-style
+// inverse: 0 when value >= high, 1 when value <= low.
+function airFalloff(value, high, low) {
+  if (high === low) return value <= low ? 1 : 0;
+  const t = THREE.MathUtils.clamp((high - value) / (high - low), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
 function canvasTexture(size, paint, wrap = 'repeat') {
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -92,11 +100,42 @@ function makeShadowTexture() {
   return canvasTexture(
     128,
     (ctx, size) => {
-      const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 62);
-      g.addColorStop(0, 'rgba(0,0,0,0.72)');
-      g.addColorStop(0.32, 'rgba(0,0,0,0.34)');
-      g.addColorStop(0.7, 'rgba(0,0,0,0.1)');
+      const g = ctx.createRadialGradient(64, 64, 6, 64, 64, 62);
+      g.addColorStop(0, 'rgba(0,0,0,0.56)');
+      g.addColorStop(0.38, 'rgba(0,0,0,0.26)');
+      g.addColorStop(0.72, 'rgba(0,0,0,0.08)');
       g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+    },
+    'clamp',
+  );
+}
+
+function makeKissTexture() {
+  return canvasTexture(
+    256,
+    (ctx, size) => {
+      const g = ctx.createRadialGradient(128, 40, 8, 128, 110, 120);
+      g.addColorStop(0, 'rgba(255, 236, 196, 0.55)');
+      g.addColorStop(0.28, 'rgba(255, 210, 150, 0.22)');
+      g.addColorStop(0.62, 'rgba(255, 188, 120, 0.06)');
+      g.addColorStop(1, 'rgba(255, 180, 110, 0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+    },
+    'clamp',
+  );
+}
+
+function makeMoteTexture() {
+  return canvasTexture(
+    32,
+    (ctx, size) => {
+      const g = ctx.createRadialGradient(16, 16, 1, 16, 16, 14);
+      g.addColorStop(0, 'rgba(255, 236, 210, 0.9)');
+      g.addColorStop(0.35, 'rgba(255, 214, 170, 0.35)');
+      g.addColorStop(1, 'rgba(255, 214, 170, 0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, size, size);
     },
@@ -125,12 +164,21 @@ function createCar() {
     specular: 0xb0aaa0,
   });
   const glassMat = new THREE.MeshPhongMaterial({
-    color: 0x4a6272,
-    shininess: 120,
-    specular: 0xc8dce8,
+    color: 0x4e5c52,
+    shininess: 96,
+    specular: 0xe8d8c0,
+    transparent: true,
+    opacity: 0.7,
+    emissive: 0x3a2414,
+    emissiveIntensity: 0.08,
+    depthWrite: false,
   });
   const rubberMat = new THREE.MeshLambertMaterial({ color: 0x1a1816 });
-  const interiorMat = new THREE.MeshLambertMaterial({ color: 0x3a322c });
+  const interiorMat = new THREE.MeshLambertMaterial({
+    color: 0x4a382c,
+    emissive: 0x3a2418,
+    emissiveIntensity: 0.14,
+  });
 
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.88, 0.52, 4.38), bodyMat);
   body.position.y = 0.64;
@@ -163,9 +211,26 @@ function createCar() {
   rearSlope.castShadow = true;
   car.add(rearSlope);
 
-  const interior = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.28, 1.7), interiorMat);
-  interior.position.set(0, 0.92, 0.35);
+  const interior = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.32, 1.85), interiorMat);
+  interior.position.set(0, 0.94, 0.42);
   car.add(interior);
+
+  const cabinGlow = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.22, 0.44),
+    new THREE.MeshBasicMaterial({
+      color: 0xffc898,
+      transparent: true,
+      opacity: 0.16,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  cabinGlow.position.set(0, 1.15, 2.132);
+  car.add(cabinGlow);
+
+  const cabinFill = new THREE.PointLight(0xffc090, 0.2, 2.35, 2);
+  cabinFill.position.set(0, 1.08, 0.4);
+  car.add(cabinFill);
 
   for (const x of [-0.58, 0.58]) {
     const rail = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.045, 2.15), chromeMat);
@@ -247,18 +312,57 @@ function createCar() {
     lamp.position.set(x, 0.66, -2.2);
     car.add(lamp);
 
-    const spot = new THREE.SpotLight(0xfff0d0, 0, 38, 0.5, 0.72, 1.55);
+    const spot = new THREE.SpotLight(0xfff0d0, 0, 20, 0.36, 0.88, 1.85);
     spot.position.set(x, 0.66, -2.22);
-    spot.target.position.set(x * 0.2, 0.08, -14);
+    spot.target.position.set(x * 0.15, 0.08, -10);
     spot.castShadow = false;
     car.add(spot);
     car.add(spot.target);
     spots.push(spot);
   }
 
-  const kiss = new THREE.PointLight(0xffe4b8, 0, 16, 1.7);
-  kiss.position.set(0, 0.2, -3.7);
+  const kiss = new THREE.PointLight(0xffe4b8, 0, 11, 2);
+  kiss.position.set(0, 0.22, -3.2);
   car.add(kiss);
+
+  const kissMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.2, 12.5),
+    new THREE.MeshBasicMaterial({
+      map: makeKissTexture(),
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      toneMapped: false,
+    }),
+  );
+  kissMesh.rotation.x = -Math.PI / 2;
+  kissMesh.position.set(0, 0.095, -6.2);
+  kissMesh.renderOrder = 1;
+  car.add(kissMesh);
+
+  const moteCount = 42;
+  const motePositions = new Float32Array(moteCount * 3);
+  for (let i = 0; i < moteCount; i += 1) {
+    motePositions[i * 3] = (Math.random() - 0.5) * 1.55;
+    motePositions[i * 3 + 1] = 0.2 + Math.random() * 1.05;
+    motePositions[i * 3 + 2] = -2.5 - Math.random() * 9;
+  }
+  const moteGeo = new THREE.BufferGeometry();
+  moteGeo.setAttribute('position', new THREE.BufferAttribute(motePositions, 3));
+  const moteMat = new THREE.PointsMaterial({
+    color: 0xffe8c8,
+    map: makeMoteTexture(),
+    size: 0.11,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  const motes = new THREE.Points(moteGeo, moteMat);
+  motes.visible = false;
+  motes.frustumCulled = false;
+  car.add(motes);
 
   const amberMat = new THREE.MeshLambertMaterial({
     color: 0xe8a04a,
@@ -336,7 +440,7 @@ function createCar() {
   }
 
   const shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.9, 7.8),
+    new THREE.PlaneGeometry(4.35, 8.2),
     new THREE.MeshBasicMaterial({
       map: makeShadowTexture(),
       transparent: true,
@@ -354,6 +458,11 @@ function createCar() {
   car.userData.tails = tailMat;
   car.userData.spots = spots;
   car.userData.kiss = kiss;
+  car.userData.kissMesh = kissMesh;
+  car.userData.glass = glassMat;
+  car.userData.cabinFill = cabinFill;
+  car.userData.cabinGlow = cabinGlow;
+  car.userData.motes = motes;
   return car;
 }
 
@@ -367,13 +476,13 @@ export function createWorld(canvas) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMappingExposure = 1.14;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
-  const fogColor = new THREE.Color('#f0c090');
-  scene.fog = new THREE.Fog(fogColor, 52, 162);
+  const fogColor = new THREE.Color('#f2c898');
+  scene.fog = new THREE.Fog(fogColor, 64, 148);
   scene.background = fogColor.clone();
 
   const camera = new THREE.PerspectiveCamera(
@@ -389,10 +498,10 @@ export function createWorld(canvas) {
   camera.position.copy(camCurrent);
   camera.lookAt(lookCurrent);
 
-  const hemi = new THREE.HemisphereLight(0xffc088, 0x5d7a3a, 0.86);
+  const hemi = new THREE.HemisphereLight(0xffc088, 0x5d7a3a, 0.7);
   scene.add(hemi);
 
-  const sunLight = new THREE.DirectionalLight(0xffd4a0, 1.55);
+  const sunLight = new THREE.DirectionalLight(0xffd4a0, 1.62);
   sunLight.position.set(-48, 24, 10);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(1024, 1024);
@@ -406,16 +515,18 @@ export function createWorld(canvas) {
   sunLight.shadow.camera.bottom = -22;
   scene.add(sunLight);
 
-  const fill = new THREE.DirectionalLight(0xffe2c4, 0.36);
+  const fill = new THREE.DirectionalLight(0xffe2c4, 0.22);
   fill.position.set(10, 14, 20);
   scene.add(fill);
 
   const skyMat = new THREE.ShaderMaterial({
     uniforms: {
-      topColor: { value: new THREE.Color('#7ea6d4') },
-      bottomColor: { value: new THREE.Color('#f3d2a0') },
+      topColor: { value: new THREE.Color('#86a8d0') },
+      bottomColor: { value: new THREE.Color('#f6d2a0') },
+      glowColor: { value: new THREE.Color('#ffc090') },
       offset: { value: 0.08 },
-      exponent: { value: 0.68 },
+      exponent: { value: 0.62 },
+      glow: { value: 0.28 },
     },
     vertexShader: `
       varying vec3 vWorldPosition;
@@ -428,13 +539,17 @@ export function createWorld(canvas) {
     fragmentShader: `
       uniform vec3 topColor;
       uniform vec3 bottomColor;
+      uniform vec3 glowColor;
       uniform float offset;
       uniform float exponent;
+      uniform float glow;
       varying vec3 vWorldPosition;
       void main() {
         float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;
         float t = pow(max(h, 0.0), exponent);
         vec3 col = mix(bottomColor, topColor, t);
+        float band = smoothstep(0.14, 0.0, abs(h - 0.03));
+        col = mix(col, glowColor, band * glow);
         gl_FragColor = vec4(col, 1.0);
       }
     `,
@@ -464,15 +579,15 @@ export function createWorld(canvas) {
   scene.add(sun);
 
   const moon = new THREE.Mesh(
-    new THREE.SphereGeometry(3.2, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0xece6d4, toneMapped: false, fog: false }),
+    new THREE.SphereGeometry(3.6, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xe8e6dc, toneMapped: false, fog: false }),
   );
   const moonGlow = new THREE.Mesh(
-    new THREE.SphereGeometry(5.1, 16, 16),
+    new THREE.SphereGeometry(7.2, 16, 16),
     new THREE.MeshBasicMaterial({
-      color: 0xc8d0e0,
+      color: 0xb8c4d8,
       transparent: true,
-      opacity: 0.16,
+      opacity: 0.1,
       toneMapped: false,
       fog: false,
       depthWrite: false,
@@ -482,7 +597,7 @@ export function createWorld(canvas) {
   moon.visible = false;
   scene.add(moon);
 
-  const starCount = 140;
+  const starCount = 48;
   const starPositions = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount; i += 1) {
     starPositions[i * 3] = (Math.random() - 0.5) * 210;
@@ -504,9 +619,9 @@ export function createWorld(canvas) {
     'clamp',
   );
   const starMat = new THREE.PointsMaterial({
-    color: 0xe8eef8,
+    color: 0xd8e0f0,
     map: starTex,
-    size: 2.1,
+    size: 1.55,
     transparent: true,
     opacity: 0,
     depthWrite: false,
@@ -539,8 +654,8 @@ export function createWorld(canvas) {
     new THREE.PlaneGeometry(8.4, 280),
     new THREE.MeshPhongMaterial({
       map: roadTex,
-      shininess: 36,
-      specular: 0x6a6458,
+      shininess: 24,
+      specular: 0x5a5448,
       polygonOffset: true,
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
@@ -598,11 +713,11 @@ export function createWorld(canvas) {
   ];
 
   const cloudUniforms = {
-    uLit: { value: new THREE.Color('#f8e6c8') },
-    uShade: { value: new THREE.Color('#d4a888') },
-    uRim: { value: new THREE.Color('#ffc090') },
+    uLit: { value: new THREE.Color('#faebd4') },
+    uShade: { value: new THREE.Color('#c49878') },
+    uRim: { value: new THREE.Color('#ffb070') },
     uLightDir: { value: new THREE.Vector3(-0.55, 0.42, 0.28).normalize() },
-    uOpacity: { value: 0.8 },
+    uOpacity: { value: 0.82 },
   };
   const cloudMat = new THREE.ShaderMaterial({
     uniforms: cloudUniforms,
@@ -623,12 +738,12 @@ export function createWorld(canvas) {
       void main() {
         vec3 N = normalize(vWorldNormal);
         vec3 L = normalize(uLightDir);
-        float wrap = clamp(dot(N, L) * 0.42 + 0.62, 0.0, 1.0);
-        float belly = smoothstep(0.4, -0.65, N.y);
+        float wrap = clamp(dot(N, L) * 0.38 + 0.68, 0.0, 1.0);
+        float belly = smoothstep(0.25, -0.7, N.y);
         vec3 col = mix(uShade, uLit, wrap);
-        vec3 under = mix(uRim, uLit, 0.45);
-        col = mix(col, under, belly * 0.72);
-        float rim = pow(max(0.0, 1.0 - abs(dot(N, L))), 1.5) * 0.28;
+        vec3 under = mix(uRim, uLit, 0.28);
+        col = mix(col, under, belly * 0.85);
+        float rim = pow(max(0.0, 1.0 - abs(dot(N, L))), 1.35) * 0.38;
         col += uRim * rim;
         gl_FragColor = vec4(col, uOpacity);
       }
@@ -725,10 +840,13 @@ export function createWorld(canvas) {
   let currentId = null;
   let look = { id: 'county', landmark: 'barn', extras: 'fence', grassMap: 'green' };
   const tmpColor = new THREE.Color();
-  const moonFill = new THREE.Color(0x8890b0);
-  const nightCloud = new THREE.Color(0x6a7898);
-  const nightShade = new THREE.Color(0x3a4458);
+  const moonFill = new THREE.Color(0x8a96b8);
+  const nightCloud = new THREE.Color(0x6e7c98);
+  const nightShade = new THREE.Color(0x2e3848);
   const moonRim = new THREE.Color(0xd4dcec);
+  const roadSpecDay = new THREE.Color(0x5a5448);
+  const roadSpecDusk = new THREE.Color(0x8a7a60);
+  const roadSpecNight = new THREE.Color(0x9a8a68);
   const cloudShade = new THREE.Color();
   const cloudRim = new THREE.Color();
 
@@ -845,18 +963,19 @@ export function createWorld(canvas) {
         map: mistTex,
         color: tint,
         transparent: true,
-        opacity: kind === 'fog' ? 0.34 : kind === 'haze' ? 0.28 : 0.24,
+        opacity: kind === 'fog' ? 0.2 : kind === 'haze' ? 0.16 : 0.14,
         depthWrite: false,
-        fog: false,
+        fog: true,
         side: THREE.DoubleSide,
       });
       const count = kind === 'fog' ? 5 : 4;
       for (let i = 0; i < count; i += 1) {
-        const sheet = new THREE.Mesh(new THREE.PlaneGeometry(28, 7.5), mistMat);
+        const sheet = new THREE.Mesh(new THREE.PlaneGeometry(14, 6.4), mistMat);
         const side = i % 2 === 0 ? -1 : 1;
-        sheet.position.set(side * (8 + (i % 3) * 3.5), kind === 'fog' ? 3.4 : 1.8, -18 - i * 16);
-        sheet.rotation.y = side * 0.18;
-        sheet.userData.drift = (i % 2 === 0 ? 1 : -1) * (0.12 + i * 0.02);
+        // Keep inner edge off the paved corridor (|x| < ~6.1) and clip-safe props.
+        sheet.position.set(side * (14 + (i % 3) * 2.2), kind === 'fog' ? 3.8 : 2.2, -28 - i * 18);
+        sheet.rotation.y = side * 0.12;
+        sheet.userData.drift = (i % 2 === 0 ? 1 : -1) * (0.08 + i * 0.015);
         weatherRoot.add(sheet);
         weather.mist.push(sheet);
       }
@@ -1003,8 +1122,11 @@ export function createWorld(canvas) {
     weather.mist.forEach((sheet) => {
       sheet.position.x += sheet.userData.drift * dt * motion;
       sheet.position.z += speed * 0.28 * dt;
-      if (sheet.position.x > 18) sheet.position.x = -18;
-      if (sheet.position.x < -18) sheet.position.x = 18;
+      if (sheet.position.x > 22) sheet.position.x = -22;
+      if (sheet.position.x < -22) sheet.position.x = 22;
+      if (Math.abs(sheet.position.x) < 12) {
+        sheet.position.x = Math.sign(sheet.position.x || 1) * 14;
+      }
       if (sheet.position.z > 6) sheet.position.z -= 70;
     });
 
@@ -1102,54 +1224,72 @@ export function createWorld(canvas) {
     const phase =
       clock.phase != null
         ? clock.phase
-        : (0.458 + clock.time * 0.0046 + (game.totalMiles || 0) * 0.00005) % 1;
+        : (0.468 + clock.time * 0.0046 + (game.totalMiles || 0) * 0.00005) % 1;
     const altitude = Math.sin(phase * Math.PI * 2);
     const azimuth = phase * Math.PI * 2;
-    const dusk = THREE.MathUtils.smoothstep(0.42, 0.05, altitude);
-    const night = THREE.MathUtils.smoothstep(0.1, -0.16, altitude);
+    const dusk = airFalloff(altitude, 0.42, 0.05);
+    const night = airFalloff(altitude, 0.1, -0.16);
 
-    skyMat.uniforms.topColor.value.copy(dayTop).lerp(duskTop, dusk * 0.42).lerp(nightTop, night);
+    skyMat.uniforms.topColor.value.copy(dayTop).lerp(duskTop, dusk * 0.35).lerp(nightTop, night);
     skyMat.uniforms.bottomColor.value.copy(dayBottom).lerp(duskBottom, dusk).lerp(nightBottom, night);
-    skyMat.uniforms.exponent.value = 0.68 + night * 0.55;
+    skyMat.uniforms.exponent.value = 0.82 + dusk * 0.06 + night * 0.5;
+    skyMat.uniforms.glow.value = 0.12 + dusk * 0.26 - night * 0.08;
+    skyMat.uniforms.glowColor.value.copy(duskSun).lerp(duskBottom, 0.35).lerp(moonFill, night);
     tmpColor.copy(dayFog).lerp(duskFog, dusk).lerp(nightFog, night);
+    tmpColor.lerp(skyMat.uniforms.bottomColor.value, 0.16);
     scene.fog.color.copy(tmpColor);
     scene.background.copy(tmpColor);
-    scene.fog.near = 50 + dusk * 6 + night * 10;
-    scene.fog.far = 158 + dusk * 8 - night * 14;
-    hemi.color.copy(dayHemi).lerp(duskHemi, dusk).lerp(nightTop, night * 0.65);
-    hemi.intensity = 0.74 + (1 - dusk) * 0.2 - night * 0.3;
-    sunLight.intensity = night > 0.55 ? 0.24 : Math.max(0.16, 1.72 - dusk * 0.7 - night * 1.15);
+    scene.fog.near = 64 + dusk * 4 + night * 10;
+    scene.fog.far = 148 + dusk * 4 - night * 18;
+    hemi.color.copy(dayHemi).lerp(duskHemi, dusk).lerp(moonFill, night * 0.55);
+    hemi.intensity = 0.58 + (1 - dusk) * 0.16 - night * 0.18;
+    sunLight.intensity = night > 0.55 ? 0.2 : Math.max(0.18, 1.68 - dusk * 0.38 - night * 1.05);
     sunLight.color.copy(daySun).lerp(duskSun, dusk).lerp(moonFill, night);
-    fill.intensity = 0.2 + dusk * 0.1 + night * 0.08;
-    renderer.toneMappingExposure = 1.16 - dusk * 0.16 - night * 0.32;
-    car.userData.lights.emissiveIntensity = 0.2 + dusk * 1.2 + night * 1.85;
-    car.userData.tails.emissiveIntensity = 0.18 + dusk * 0.5 + night * 0.85;
-    const beam = dusk * 36 + night * 58;
+    fill.color.copy(daySun).lerp(duskSun, dusk * 0.4).lerp(moonFill, night);
+    fill.intensity = 0.16 + dusk * 0.08 + night * 0.14;
+    renderer.toneMappingExposure = 1.14 - dusk * 0.1 - night * 0.22;
+    car.userData.lights.emissiveIntensity = 0.18 + dusk * 0.7 + night * 1.15;
+    car.userData.tails.emissiveIntensity = 0.16 + dusk * 0.35 + night * 0.7;
+    const beam = dusk * 10 + night * 22;
     car.userData.spots.forEach((spot) => {
       spot.intensity = beam;
     });
-    car.userData.kiss.intensity = dusk * 10 + night * 15;
+    car.userData.kiss.intensity = dusk * 3.2 + night * 6.4;
+    if (car.userData.kissMesh) {
+      car.userData.kissMesh.material.opacity = dusk * 0.28 + night * 0.52;
+    }
+    if (car.userData.glass) {
+      car.userData.glass.emissiveIntensity = 0.05 + dusk * 0.06 + night * 0.12;
+    }
+    if (car.userData.cabinFill) {
+      car.userData.cabinFill.intensity = 0.16 + dusk * 0.1 + night * 0.14;
+    }
+    if (car.userData.cabinGlow) {
+      car.userData.cabinGlow.material.opacity = 0.08 + dusk * 0.06 + night * 0.2;
+    }
+    road.material.shininess = 22 + dusk * 10 + night * 16;
+    road.material.specular.copy(roadSpecDay).lerp(roadSpecDusk, dusk).lerp(roadSpecNight, night);
 
     sun.position.set(-Math.cos(azimuth) * 52, altitude * 26, -90);
     sun.visible = altitude > -0.08;
     sunGlow.material.opacity = 0.16 + dusk * 0.12 - night * 0.1;
     moon.position.set(Math.cos(azimuth) * 50, Math.max(0.2, -altitude) * 26, -86);
     moon.visible = night > 0.12;
-    moonGlow.material.opacity = 0.08 + night * 0.14;
-    stars.visible = night > 0.08;
-    starMat.opacity = night * 0.85;
+    moonGlow.material.opacity = 0.07 + night * 0.11;
+    stars.visible = night > 0.18;
+    starMat.opacity = night * 0.48;
     stars.rotation.y = phase * 0.15;
 
-    const cloudNight = Math.max(0, Math.min(1, (night - 0.38) / 0.55));
-    cloudUniforms.uLit.value.copy(cloudDay).lerp(duskSun, dusk * 0.5).lerp(nightCloud, cloudNight);
-    cloudShade.copy(cloudDay).multiplyScalar(0.78).lerp(duskHemi, dusk * 0.35).lerp(nightShade, cloudNight);
+    const cloudNight = Math.max(0, Math.min(1, (night - 0.28) / 0.6));
+    cloudUniforms.uLit.value.copy(cloudDay).lerp(duskSun, dusk * 0.42).lerp(nightCloud, cloudNight);
+    cloudShade.copy(cloudDay).multiplyScalar(0.72).lerp(duskHemi, dusk * 0.45).lerp(nightShade, cloudNight);
     cloudUniforms.uShade.value.copy(cloudShade);
     cloudRim.copy(duskSun).lerp(moonRim, cloudNight);
     cloudUniforms.uRim.value.copy(cloudRim);
-    cloudUniforms.uOpacity.value = 0.8 - cloudNight * 0.08;
+    cloudUniforms.uOpacity.value = 0.82 - cloudNight * 0.08;
     const lightSrc = sun.visible ? sun.position : moon.position;
     cloudUniforms.uLightDir.value.copy(lightSrc).normalize();
-    grass.material.color.setRGB(1 - night * 0.45, 1 - night * 0.42, 1 - night * 0.32);
+    grass.material.color.setRGB(1 - night * 0.38, 1 - night * 0.35, 1 - night * 0.28);
 
     const lightPos = sun.visible
       ? sun.position.clone().normalize().multiplyScalar(58)
@@ -1170,6 +1310,28 @@ export function createWorld(canvas) {
 
     tickWeather(dt, speed, reduced);
     tickEvent(dt, speed, reduced);
+
+    const motes = car.userData.motes;
+    if (motes) {
+      if (reduced) {
+        motes.visible = false;
+      } else {
+        const show = dusk * 0.35 + night * 0.65;
+        motes.visible = show > 0.08;
+        motes.material.opacity = show * 0.4;
+        const arr = motes.geometry.attributes.position.array;
+        for (let i = 0; i < arr.length; i += 3) {
+          arr[i + 1] += dt * 0.03 * (0.4 + (i % 5) * 0.08);
+          arr[i + 2] += dt * 0.07;
+          if (arr[i + 2] > -1.6 || arr[i + 1] > 1.75) {
+            arr[i] = (Math.random() - 0.5) * 1.55;
+            arr[i + 1] = 0.18 + Math.random() * 1.05;
+            arr[i + 2] = -2.5 - Math.random() * 9;
+          }
+        }
+        motes.geometry.attributes.position.needsUpdate = true;
+      }
+    }
 
     const sway = reduced ? 0 : 1;
     const bob = Math.sin(clock.time * 6.2) * 0.01 * (0.35 + impulse * 0.45) * sway;
