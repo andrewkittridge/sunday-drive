@@ -4,7 +4,7 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-(see GitHub draft after push)  
+https://github.com/andrewkittridge/sunday-drive/pull/11 (draft)  
 Base: `main` @ `958547a` (wave 8). Head: `wave/9-mobile-upgrades`.
 
 ## Thesis
