@@ -11,6 +11,10 @@
   --shadow: 0 18px 40px rgba(20, 10, 4, 0.32);
   --sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 * {
@@ -21,7 +25,9 @@ html,
 body {
   margin: 0;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
+  overscroll-behavior: none;
   background: #4a3424;
   color: var(--ink);
   font-family: var(--sans);
@@ -68,14 +74,15 @@ input {
   position: relative;
   z-index: 2;
   height: 100%;
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr minmax(300px, 400px);
   grid-template-rows: auto 1fr;
   gap: 1rem;
-  padding: max(1rem, env(safe-area-inset-top, 0px))
-    max(clamp(1rem, 2vw, 1.8rem), env(safe-area-inset-right, 0px))
-    max(1rem, env(safe-area-inset-bottom, 0px))
-    max(clamp(1rem, 2vw, 1.8rem), env(safe-area-inset-left, 0px));
+  padding: max(1rem, var(--safe-top))
+    max(clamp(1rem, 2vw, 1.8rem), var(--safe-right))
+    max(1rem, var(--safe-bottom))
+    max(clamp(1rem, 2vw, 1.8rem), var(--safe-left));
   pointer-events: none;
   overflow: hidden;
 }
@@ -241,6 +248,7 @@ input {
   font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  white-space: nowrap;
   box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
@@ -440,7 +448,7 @@ input {
   position: fixed;
   z-index: 4;
   left: 50%;
-  bottom: 1.4rem;
+  bottom: max(1.4rem, calc(var(--safe-bottom) + 0.9rem));
   transform: translateX(-50%);
   background: var(--paper-strong);
   color: var(--ink);
@@ -449,7 +457,7 @@ input {
   padding: 1.05rem 1.55rem;
   font-size: 1.35rem;
   line-height: 1.35;
-  max-width: min(40rem, calc(100% - 2rem));
+  max-width: min(40rem, calc(100% - 2rem - var(--safe-left) - var(--safe-right)));
   text-align: center;
   box-shadow: var(--shadow);
   animation: toast-in 0.4s ease;
@@ -493,7 +501,8 @@ input {
   display: grid;
   place-items: center;
   background: rgba(18, 10, 6, 0.55);
-  padding: 1rem;
+  padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right))
+    max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
 }
 
 .modal[hidden],
@@ -571,29 +580,68 @@ input {
     gap: 0.45rem;
     overflow: hidden;
     align-content: stretch;
+    min-height: 100dvh;
+    padding-top: max(0.7rem, var(--safe-top));
+    padding-right: max(0.7rem, var(--safe-right));
+    padding-bottom: max(0.85rem, calc(var(--safe-bottom) + 0.5rem));
+    padding-left: max(0.7rem, var(--safe-left));
   }
 
   .topbar {
     grid-area: topbar;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "wordmark souvenir"
+      "dest dest"
+      "buttons buttons";
     flex-shrink: 0;
-    align-items: flex-start;
+    align-items: center;
+    gap: 0.28rem 0.65rem;
+  }
+
+  .brand,
+  .top-actions {
+    display: contents;
   }
 
   .brand h1 {
-    font-size: clamp(1.55rem, 7vw, 2.1rem);
+    grid-area: wordmark;
+    font-size: clamp(1.05rem, 3.8vw, 1.22rem);
+    line-height: 1.15;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
   }
 
-  .top-actions {
-    align-items: stretch;
+  .brand p {
+    grid-area: dest;
+    font-family: var(--display);
+    font-size: clamp(1.28rem, 5.4vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 0;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .souvenir {
+    grid-area: souvenir;
+    font-size: 0.95rem;
+    margin: 0;
+    text-align: right;
   }
 
   .top-buttons {
-    justify-content: flex-end;
-    max-width: 16.5rem;
+    grid-area: buttons;
+    justify-content: flex-start;
+    max-width: none;
   }
 
   .ghost {
-    padding: 0.55rem 0.9rem;
+    padding: 0.5rem 0.85rem;
+    min-height: 48px;
   }
 
   .stage {
@@ -688,7 +736,7 @@ input {
   }
 
   body.panel-open .prestige {
-    min-height: 2.4rem;
+    min-height: max(48px, 2.4rem);
     font-size: 1.02rem;
   }
 
@@ -698,54 +746,184 @@ input {
 
   .drive {
     width: 100%;
-    min-height: 4.8rem;
+    min-height: max(48px, 4.8rem);
     font-size: 2rem;
     flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .miles {
-    font-size: clamp(2.6rem, 12vw, 4.2rem);
+    font-size: clamp(2.35rem, 10.5vw, 3.6rem);
+  }
+
+  .unit {
+    font-size: 1.15rem;
+  }
+
+  .rate,
+  .trip {
+    font-size: 1.05rem;
   }
 }
 
-@media (max-width: 900px) and (max-height: 740px) {
+@media (max-width: 900px) and (max-height: 740px) and (orientation: portrait) {
   .panel {
-    max-height: min(12vh, 5.75rem);
+    max-height: min(13vh, 6.1rem);
   }
 
   body.panel-open .drive {
     min-height: max(48px, 3.25rem);
   }
+
+  .miles {
+    font-size: clamp(2.1rem, 9.5vw, 3.1rem);
+  }
+}
+
+@media (max-width: 900px) and (max-height: 680px) and (orientation: portrait) {
+  #hud {
+    gap: 0.32rem;
+    padding-bottom: max(0.7rem, calc(var(--safe-bottom) + 0.45rem));
+  }
+
+  .brand h1 {
+    font-size: clamp(1.05rem, 4.2vw, 1.22rem);
+  }
+
+  .brand p {
+    font-size: clamp(1.16rem, 4.8vw, 1.35rem);
+  }
+
+  .panel {
+    max-height: min(14vh, 5.85rem);
+    padding: 0.42rem 0.75rem 0.38rem;
+  }
+
+  body.panel-open .panel {
+    padding-right: 4.35rem;
+  }
+
+  body.panel-open .panel h2 {
+    font-size: 1.12rem;
+  }
+
+  body.panel-open .upgrade {
+    min-height: 48px;
+    padding: 0.38rem 0.65rem;
+  }
+
+  body.panel-open .upgrade .meta {
+    display: none;
+  }
+
+  body.panel-open .drive {
+    min-height: max(48px, 3.15rem);
+    font-size: 1.7rem;
+  }
+
+  body.panel-open .panel-toggle {
+    min-height: 48px;
+    min-width: 48px;
+    margin: 0.28rem 0.28rem 0 0;
+    padding: 0.32rem 0.75rem;
+    font-size: 1rem;
+  }
+
+  .drive {
+    min-height: max(48px, 4.2rem);
+    font-size: 1.85rem;
+  }
+
+  .miles {
+    font-size: clamp(1.9rem, 9vw, 2.7rem);
+  }
+
+  .souvenir {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
-  .panel-toggle {
+  .panel-toggle,
+  body.panel-open .panel-toggle {
     display: none;
+  }
+
+  .stage {
+    display: contents;
   }
 
   #hud {
     display: grid;
-    grid-template-columns: 1fr minmax(220px, 42vw);
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(198px, min(15rem, 30vw));
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "topbar topbar"
-      "stage panel";
-    gap: 0.7rem;
+      "odo panel"
+      "odo drive";
+    gap: 0.4rem 0.6rem;
+    min-height: 100dvh;
+    padding-top: max(0.35rem, var(--safe-top));
+    padding-right: max(0.55rem, var(--safe-right));
+    padding-bottom: max(0.4rem, var(--safe-bottom));
+    padding-left: max(0.55rem, var(--safe-left));
   }
 
   .topbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     grid-area: topbar;
     grid-column: 1 / -1;
+    align-items: center;
+    gap: 0.6rem;
   }
 
-  .stage {
-    grid-area: stage;
-    order: 0;
-    margin-top: 0;
-    padding-bottom: 0.4rem;
-    grid-column: 1;
-    grid-row: 2;
+  .brand {
+    display: block;
+    min-width: 0;
+  }
+
+  .top-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .brand h1 {
+    font-size: clamp(1.05rem, 3.6vh, 1.3rem);
+    white-space: nowrap;
+  }
+
+  .brand p {
+    font-size: clamp(1.12rem, 4.2vh, 1.38rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .top-buttons {
+    max-width: none;
+    flex-wrap: wrap;
     justify-content: flex-end;
+  }
+
+  .souvenir {
+    display: none;
+  }
+
+  .odometer {
+    grid-area: odo;
+    align-self: end;
+    max-width: min(18rem, 100%);
+    pointer-events: auto;
+  }
+
+  .drive-wrap {
+    grid-area: drive;
+    margin-top: 0;
+    flex-shrink: 0;
+    pointer-events: auto;
   }
 
   .panel {
@@ -753,62 +931,105 @@ input {
     grid-area: panel;
     order: 0;
     max-height: none;
-    height: 100%;
+    height: auto;
     min-height: 0;
     margin-top: 0;
-    padding: 1.2rem 1.15rem 1.05rem;
-    grid-column: 2;
-    grid-row: 2;
+    padding: 0.6rem 0.7rem 0.55rem;
+    align-self: stretch;
   }
 
   body.panel-open .panel {
-    padding-right: 1.15rem;
+    display: flex;
+    padding-right: 0.7rem;
   }
 
   body.panel-open .odometer,
   body.panel-open .rate,
-  body.panel-open .trip,
-  body.panel-open .hint,
   body.panel-open .unit {
     display: block;
   }
 
+  body.panel-open .trip,
+  body.panel-open .hint {
+    display: none;
+  }
+
   body.panel-open .drive-wrap {
-    margin-top: 1.4rem;
+    margin-top: 0;
   }
 
   body.panel-open .drive {
-    min-height: 3.8rem;
-    font-size: 1.7rem;
+    min-height: max(48px, 3.15rem);
+    font-size: 1.55rem;
   }
 
   body.panel-open .panel h2 {
-    font-size: 1.7rem;
+    font-size: 1.22rem;
   }
 
   body.panel-open .upgrade {
-    min-height: 76px;
-    padding: 0.85rem 0.95rem;
+    min-height: 48px;
+    padding: 0.42rem 0.6rem;
   }
 
-  body.panel-open .prestige-box:has(.prestige:disabled) {
-    display: block;
+  body.panel-open .upgrade .meta {
+    display: none;
+  }
+
+  body.panel-open .prestige-box:has(.prestige:disabled),
+  .prestige-box:has(.prestige:disabled) {
+    display: none;
+  }
+
+  .panel h2 {
+    font-size: 1.22rem;
   }
 
   .panel-lead,
-  .prestige-hint {
-    display: block;
-    font-size: 0.95rem;
+  .prestige-hint,
+  .hint,
+  .trip {
+    display: none;
+  }
+
+  .upgrade {
+    min-height: 48px;
+    padding: 0.42rem 0.6rem;
+  }
+
+  .upgrade .meta {
+    display: none;
+  }
+
+  .upgrade .name,
+  .upgrade .cost {
+    font-size: 1.08rem;
+  }
+
+  .prestige {
+    min-height: max(48px, 2.4rem);
+    font-size: 1rem;
   }
 
   .drive {
-    min-height: 3.8rem;
-    font-size: 1.7rem;
-    width: min(100%, 22rem);
+    width: 100%;
+    min-height: max(48px, 3.15rem);
+    font-size: 1.55rem;
+    white-space: nowrap;
   }
 
   .miles {
-    font-size: clamp(2rem, 10vh, 3.2rem);
+    font-size: clamp(1.65rem, 8vh, 2.45rem);
+  }
+
+  .unit {
+    font-size: 1rem;
+    display: block;
+  }
+
+  .rate {
+    font-size: 0.95rem;
+    display: block;
   }
 }
 
@@ -868,23 +1089,75 @@ body.large-type .modal-body {
 }
 
 @media (max-width: 900px) {
+  body.large-type .brand h1 {
+    font-size: clamp(1.2rem, 4.8vw, 1.48rem);
+    white-space: nowrap;
+  }
+
+  body.large-type .brand p {
+    font-size: clamp(1.34rem, 5.4vw, 1.68rem);
+  }
+
   body.large-type .miles {
-    font-size: clamp(3rem, 13vw, 4.8rem);
+    font-size: clamp(2.55rem, 11vw, 3.7rem);
   }
 
   body.large-type .drive {
-    font-size: 2.2rem;
-    min-height: 5.1rem;
+    font-size: 2rem;
+    min-height: max(48px, 4.5rem);
+    white-space: nowrap;
   }
 
   body.large-type.panel-open .drive {
-    font-size: 2rem;
-    min-height: max(48px, 4.2rem);
+    font-size: 1.85rem;
+    min-height: max(48px, 3.6rem);
+  }
+
+  body.large-type .ghost,
+  body.large-type .panel-toggle {
+    font-size: 1.05rem;
   }
 
   body.panel-open .upgrades {
     min-height: 0;
     flex: 1;
+  }
+}
+
+@media (max-width: 900px) and (max-height: 680px) and (orientation: portrait) {
+  body.large-type .miles {
+    font-size: clamp(2.15rem, 9.5vw, 3rem);
+  }
+
+  body.large-type .drive {
+    font-size: 1.85rem;
+    min-height: max(48px, 4.1rem);
+  }
+
+  body.large-type.panel-open .drive {
+    font-size: 1.7rem;
+    min-height: max(48px, 3.25rem);
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  body.large-type .brand h1 {
+    font-size: clamp(1.12rem, 3.8vh, 1.35rem);
+  }
+
+  body.large-type .brand p {
+    font-size: clamp(1.2rem, 4.4vh, 1.45rem);
+  }
+
+  body.large-type .miles {
+    font-size: clamp(1.8rem, 8.5vh, 2.6rem);
+  }
+
+  body.large-type .drive,
+  body.large-type.panel-open .drive {
+    font-size: 1.65rem;
+    min-height: max(48px, 3.3rem);
+    white-space: nowrap;
   }
 }
 
@@ -910,7 +1183,7 @@ body.reduce-motion .drive:active {
 
 .modal-card.gallery-card {
   width: min(58rem, 100%);
-  max-height: min(90vh, 52rem);
+  max-height: min(calc(90dvh - var(--safe-top) - var(--safe-bottom)), 52rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;
