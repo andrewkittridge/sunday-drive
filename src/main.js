@@ -110,6 +110,12 @@ function renderUpgrades() {
 function syncMute() {
   els.mute.textContent = game.muted ? 'Sound off' : 'Sound on';
   els.mute.setAttribute('aria-pressed', String(!game.muted));
+  els.mute.setAttribute(
+    'aria-label',
+    game.muted
+      ? 'Sound off. Turns on the music and the car.'
+      : 'Sound on. Mutes the music and the car.',
+  );
   audio.setMuted(game.muted);
 }
 
@@ -120,6 +126,7 @@ function syncComfort() {
   els.largeType.textContent = game.largeType ? 'Larger type on' : 'Larger type';
   els.reduceMotion.setAttribute('aria-pressed', String(game.reduceMotion));
   els.reduceMotion.textContent = game.reduceMotion ? 'Less motion on' : 'Less motion';
+  audio.setReduceMotion(game.reduceMotion);
 }
 
 function setPanelOpen(open) {

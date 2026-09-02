@@ -36,7 +36,7 @@ Preview defaults to **http://127.0.0.1:4173/**.
 
 - **Drive** — click the Drive button or press Space. Miles are also earned passively.
 - **Upgrades** — tires, mixtape, diner, thermos (later: cruise control, autopilot playlist). Costs miles; raises click power and mi/s.
-- **Keys 1–6** buy upgrades in order. **M** or **Sound on/off** toggles the mixtape. Mute stays muted.
+- **Keys 1–6** buy upgrades in order. **M** or **Sound on/off** mutes everything (lo-fi soundtrack and the car). Mute stays muted. Volume starts gentle.
 - **Postcards** opens a gallery of destinations you have parked at. **Larger type** and **Less motion** sit next to Sound and persist with the save. Less motion also follows the OS reduce-motion preference until you toggle it.
 - Close the tab and come back: an honest offline catch-up uses the timestamp in `localStorage`. No punish, no timers.
 - Reach the next town to prestige: upgrades reset, souvenir multiplier stays, and the countryside actually changes.
