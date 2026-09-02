@@ -4,7 +4,8 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-Draft against `main` @ `44e64d5` (wave 5). Head: `wave/6-soft-leftovers`.
+https://github.com/andrewkittridge/sunday-drive/pull/7 (draft)  
+Base: `main` @ `44e64d5` (wave 5). Head: `wave/6-soft-leftovers`.
 
 ## Thesis
 
