@@ -12,12 +12,26 @@ import {
 } from './game.js';
 import { createWorld } from './scene.js';
 
+const params = new URLSearchParams(window.location.search);
+const shotId = params.get('shot');
+const hideHud = params.get('hud') === '0';
+const captureMode = Boolean(shotId) || hideHud || params.get('capture') === '1';
+
 const game = Game.load();
 const audio = new Ambience();
 audio.setMuted(game.muted);
 
+if (shotId) {
+  const idx = DESTINATIONS.findIndex((d) => d.id === shotId);
+  if (idx >= 0) game.destinationIndex = idx;
+}
+
 const world = createWorld(document.getElementById('gl'));
 world.applyRoute(game.destination.id);
+if (params.has('time')) {
+  const t = Number(params.get('time'));
+  if (Number.isFinite(t)) world.setTime(t);
+}
 
 const els = {
   miles: document.getElementById('miles'),
@@ -375,14 +389,27 @@ window.addEventListener('keydown', (event) => {
   if (digit >= 1 && digit <= UPGRADES.length) buy(UPGRADES[digit - 1].id);
 });
 
-window.addEventListener('beforeunload', () => game.save());
+window.addEventListener('beforeunload', () => {
+  if (!captureMode) game.save();
+});
+
+if (hideHud) {
+  document.getElementById('hud').hidden = true;
+}
 
 renderUpgrades();
 syncMute();
 syncHud();
 
-const offline = game.applyOffline();
-if (offline) {
+const offline = captureMode ? null : game.applyOffline();
+if (captureMode) {
+  game.welcomed = true;
+  game.miles = 0;
+  game.tripMiles = 0;
+  game.driveImpulse = 0;
+  els.modal.hidden = true;
+  syncHud();
+} else if (offline) {
   const extra = offline.capped
     ? `<p>The odometer counted ${formatDuration(offline.counted)} of road — as far as it could keep honestly.</p>`
     : '';
@@ -441,7 +468,7 @@ function frame(now) {
   audio.sync(game);
   if (els.modal.hidden) flushToasts();
   syncHud();
-  if (now - clock.saveAt > 2000) {
+  if (!captureMode && now - clock.saveAt > 2000) {
     game.save();
     clock.saveAt = now;
   }
