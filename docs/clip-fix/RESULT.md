@@ -4,9 +4,7 @@ Draft PR only. Not merged. Not deployed to production.
 
 ## PR
 
-https://github.com/andrewkittridge/sunday-drive/pull/1
-
-(URL filled after `gh pr create --draft`; if the number differs, the GitHub PR from branch `fix/landscape-road-clip` is the record.)
+https://github.com/andrewkittridge/sunday-drive/pull/1 (draft)
 
 ## Root cause
 
