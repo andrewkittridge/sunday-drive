@@ -38,6 +38,13 @@ const DECK = {
   cloudZRate: 0.1,
 };
 
+const CLOUD_LANES = [
+  { x: -22, y: 17.6, z: -48, scale: 1.08 },
+  { x: 16, y: 20.0, z: -76, scale: 1.22 },
+  { x: 30, y: 16.2, z: -112, scale: 0.88 },
+  { x: -12, y: 21.4, z: -94, scale: 1.02 },
+];
+
 const WHITE = new THREE.Color(0xffffff);
 const moonFill = new THREE.Color(0x8a96b8);
 const nightCloud = new THREE.Color(0x6e7c98);
@@ -331,6 +338,22 @@ function paintAir(stage, air) {
     const base = mat.userData.baseEmissive ?? 0.35;
     mat.emissiveIntensity = base * air.emissive;
   }
+}
+
+function recycleZ(object, speedDt, far, near) {
+  object.position.z += speedDt;
+  if (object.position.z > near) object.position.z -= far;
+}
+
+function tickClouds(clouds, dt, speed, reduced) {
+  const xRate = reduced ? 0.05 : 0.22;
+  clouds.forEach((cloud, i) => {
+    cloud.position.x += dt * (xRate + i * 0.03 * (reduced ? 0.2 : 1));
+    if (cloud.position.x > 58) cloud.position.x = -58;
+    if (cloud.position.x < -58) cloud.position.x = 58;
+    recycleZ(cloud, speed * DECK.cloudZRate * dt, DECK.cloudFar, DECK.cloudNear);
+    if (cloud.userData.baseScale) cloud.scale.setScalar(cloud.userData.baseScale);
+  });
 }
 
 function canvasTexture(size, paint, wrap = 'repeat') {
@@ -1076,8 +1099,11 @@ export function createWorld(canvas) {
     uniforms: cloudUniforms,
     vertexShader: `
       varying vec3 vWorldNormal;
+      varying vec3 vWorldPosition;
       void main() {
         vWorldNormal = normalize(mat3(modelMatrix) * normal);
+        vec4 world = modelMatrix * vec4(position, 1.0);
+        vWorldPosition = world.xyz;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
@@ -1088,7 +1114,11 @@ export function createWorld(canvas) {
       uniform vec3 uUnder;
       uniform vec3 uLightDir;
       uniform float uOpacity;
+      uniform vec3 uFogColor;
+      uniform float uFogNear;
+      uniform float uFogFar;
       varying vec3 vWorldNormal;
+      varying vec3 vWorldPosition;
       void main() {
         vec3 N = normalize(vWorldNormal);
         vec3 L = normalize(uLightDir);
@@ -1100,7 +1130,11 @@ export function createWorld(canvas) {
         col = mix(col, uLit, crown * 0.22);
         float rim = pow(max(0.0, 1.0 - abs(dot(N, L))), 1.4) * 0.3;
         col += uRim * rim;
-        gl_FragColor = vec4(col, uOpacity);
+        float depth = abs(vWorldPosition.z);
+        float fogF = smoothstep(uFogNear, uFogFar, depth);
+        col = mix(col, uFogColor, fogF);
+        float alpha = uOpacity * (1.0 - fogF);
+        gl_FragColor = vec4(col, alpha);
       }
     `,
     transparent: true,
@@ -1128,22 +1162,17 @@ export function createWorld(canvas) {
     const group = new THREE.Group();
     for (const [x, y, z, sx, sy, sz] of puffOffsets) {
       const puff = new THREE.Mesh(puffGeo, cloudMat);
-      puff.position.set(x, y, z);
+      puff.position.set(x, y, z * 2.6);
       puff.scale.set(sx, sy, sz);
       group.add(puff);
     }
     return group;
   }
-  const cloudSlots = [
-    [-22, 17.6, -52, 1.38],
-    [12, 20.4, -72, 1.58],
-    [26, 15.2, -38, 1.12],
-    [-8, 19.6, -90, 1.42],
-  ];
-  for (const [x, y, z, s] of cloudSlots) {
+  for (const lane of CLOUD_LANES) {
     const cloud = createCloud();
-    cloud.position.set(x, y, z);
-    cloud.scale.setScalar(s);
+    cloud.position.set(lane.x, lane.y, lane.z);
+    cloud.scale.setScalar(lane.scale);
+    cloud.userData.baseScale = lane.scale;
     scene.add(cloud);
     clouds.push(cloud);
   }
@@ -1252,11 +1281,6 @@ export function createWorld(canvas) {
     toneMapped: false,
     side: THREE.DoubleSide,
   });
-
-  function recycleZ(object, speedDt, far, near) {
-    object.position.z += speedDt;
-    if (object.position.z > near) object.position.z -= far;
-  }
 
   function gatherNeon(root) {
     const mats = [];
@@ -1569,11 +1593,7 @@ export function createWorld(canvas) {
       recycleZ(item.obj, move * item.speed, item.far, item.near);
     });
     hills.forEach((hill) => recycleZ(hill, move * 0.22, 90, 20));
-    const cloudDrift = reduced ? 0.05 : 0.22;
-    clouds.forEach((cloud, i) => {
-      cloud.position.x += dt * (cloudDrift + i * 0.03 * (reduced ? 0.2 : 1));
-      if (cloud.position.x > 58) cloud.position.x = -58;
-    });
+    tickClouds(clouds, dt, speed, reduced);
 
     tickWeather(dt, speed, reduced);
     tickEvent(dt, speed, reduced);
