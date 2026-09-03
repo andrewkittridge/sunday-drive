@@ -11,6 +11,7 @@ import {
   isCollected,
   parseSaveText,
 } from './game.js';
+import { startCompany } from './presence.js';
 import { createWorld } from './scene.js';
 
 const params = new URLSearchParams(window.location.search);
@@ -59,6 +60,7 @@ const els = {
   trip: document.getElementById('trip'),
   destination: document.getElementById('destination'),
   souvenir: document.getElementById('souvenir'),
+  company: document.getElementById('company'),
   menu: document.getElementById('menu'),
   menuPanel: document.getElementById('menu-panel'),
   menuWrap: document.querySelector('.menu-wrap'),
@@ -608,6 +610,8 @@ if (captureMode) {
     ],
   });
 }
+
+if (!captureMode) startCompany(els.company);
 
 window.__sundayDrive = { game, world, audio };
 
