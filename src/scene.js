@@ -356,6 +356,13 @@ function tickClouds(clouds, dt, speed, reduced) {
   });
 }
 
+function seatCookie(stage, car) {
+  const cookie = stage.cookie;
+  if (!cookie) return;
+  cookie.position.set(car.position.x, DECK.cookieY, car.position.z + DECK.cookieZ);
+  cookie.rotation.set(-Math.PI / 2, 0, 0);
+}
+
 function canvasTexture(size, paint, wrap = 'repeat') {
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -693,14 +700,14 @@ function createCar() {
     spots.push(spot);
   }
 
-  const kiss = new THREE.PointLight(0xffd8a0, 0, 7.5, 2.2);
+  const kiss = new THREE.PointLight(0xffd8a0, 0, DECK.kissDistance, DECK.kissDecay);
   kiss.position.set(0, 0.2, -2.85);
   car.add(kiss);
 
   const cookieMat = makeCookieMaterial();
-  const kissMesh = new THREE.Mesh(new THREE.PlaneGeometry(5.8, 9.4), cookieMat);
+  const kissMesh = new THREE.Mesh(new THREE.PlaneGeometry(DECK.cookieW, DECK.cookieLen), cookieMat);
   kissMesh.rotation.x = -Math.PI / 2;
-  kissMesh.position.set(0, 0.098, -6.7);
+  kissMesh.position.set(0, DECK.cookieY, DECK.cookieZ);
   kissMesh.renderOrder = 1;
   kissMesh.visible = false;
   car.add(kissMesh);
@@ -812,11 +819,11 @@ function createCar() {
     }),
   );
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.11;
+  shadow.position.y = 0.03;
   shadow.renderOrder = -1;
   car.add(shadow);
 
-  car.position.set(0, 0, 1.6);
+  car.position.set(0, DECK.restY, 1.6);
   car.userData.wheels = wheels;
   car.userData.lights = lightMat;
   car.userData.tails = tailMat;
@@ -1205,6 +1212,9 @@ export function createWorld(canvas) {
 
   const car = createCar();
   scene.add(car);
+  const cookie = car.userData.kissMesh;
+  car.remove(cookie);
+  scene.add(cookie);
 
   const clock = { travel: 0, time: 0, phase: null };
   let movers = [];
@@ -1228,12 +1238,13 @@ export function createWorld(canvas) {
     clouds,
     grass,
     road,
-    cookie: car.userData.kissMesh,
+    cookie,
     car,
     scenery,
     spin: [],
     emissives: [],
   };
+  seatCookie(stage, car);
 
   function makeMistTexture() {
     return canvasTexture(
@@ -1622,12 +1633,13 @@ export function createWorld(canvas) {
 
     const sway = reduced ? 0 : 1;
     const bob = Math.sin(clock.time * 6.2) * 0.01 * (0.35 + impulse * 0.45) * sway;
-    car.position.y = bob;
+    car.position.y = DECK.restY + bob;
     car.rotation.x = -impulse * 0.018 + Math.sin(clock.time * 5.1) * 0.005 * sway;
     car.rotation.z = Math.sin(clock.time * 1.8) * 0.008 * sway;
     car.userData.wheels.forEach((wheel) => {
       wheel.rotation.x += speed * dt * 2.4;
     });
+    seatCookie(stage, car);
 
     const camNudge = reduced ? 0 : 1;
     camTarget.set(0.76, 2.2 + impulse * 0.05 * camNudge, 8.35 + impulse * 0.22 * camNudge);
