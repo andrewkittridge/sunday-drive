@@ -2,7 +2,7 @@
 
 Andrew (2026-09-03). The postcard should recede as one volume. Live stills already look like a quiet woodie. Fog, key, clouds, tires, and a second barn still fight that still.
 
-Worktree: `/tmp/sunday-drive-cozy-air` on `wave/10-cozy-air`.
+Branch: `wave/10-cozy-air`.
 Live: https://sunday-drive-ten.vercel.app
 Channel: Sunday Drive.
 
