@@ -15,6 +15,7 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  --air-night: 0;
 }
 
 * {
@@ -62,7 +63,11 @@ input {
 }
 
 .vignette {
-  background: radial-gradient(ellipse at center, transparent 58%, rgba(28, 14, 6, 0.22) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 58%,
+    rgba(28, 14, 6, calc(0.22 * (1 - var(--air-night, 0) * 0.7))) 100%
+  );
 }
 
 .grain {
