@@ -4,7 +4,8 @@ Draft only. Not merged. Not deployed to production.
 
 ## PR
 
-See the pull request opened with this branch. Base: `main` @ `3b494c4` (wave 10 Air). Head: `wave/11-volume`.
+https://github.com/andrewkittridge/sunday-drive/pull/14  
+Base: `main` @ `3b494c4` (wave 10 Air). Head: `wave/11-volume`.
 
 ## Thesis
 
@@ -54,7 +55,7 @@ Rerun: `node wave11-volume/capture.mjs` (starts Vite on 5174 so it does not atta
 
 ## Verdict
 
-VERIFIED against the visual bar on the five stills. Hills melt. Clouds are air. The deer is a deer. The moon is a disc. HUD hierarchy holds. The wagon is a clearer woodie from behind and still a box stack in the details.
+VERIFIED on hills, clouds, deer, night disc, road, and HUD hierarchy. The wagon is a clearer woodie from behind. It is not a rounded cabin. That bar line stays open.
 
 ## Unfinished
 
