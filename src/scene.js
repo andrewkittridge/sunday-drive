@@ -1500,12 +1500,15 @@ export function createWorld(canvas) {
     }
   }
 
-  function tickWeather(dt, speed, reduced) {
+  function tickWeather(dt, speed, reduced, sample) {
     const motion = reduced ? 0.14 : 1;
     weather.hazeTime += dt * motion;
     if (weather.haze.length) hazeMat.uniforms.time.value = weather.hazeTime;
 
+    const leavesOn = !sample || sample.night < 0.45;
     weather.leaves.forEach((leaf) => {
+      leaf.visible = leavesOn;
+      if (!leavesOn) return;
       leaf.position.y -= leaf.userData.fall * dt * motion;
       leaf.position.x += Math.sin(clock.time * leaf.userData.sway + leaf.userData.phase) * 0.35 * dt * motion;
       leaf.position.z += speed * 0.35 * dt;
@@ -1562,7 +1565,13 @@ export function createWorld(canvas) {
     const built = populateScenery(scenery, theme);
     movers = built.movers;
     stage.spin = built.spin || [];
-    eventState.neonMats = gatherNeon(scenery);
+    stage.emissives = gatherNeon(scenery);
+    stage.emissives.forEach((mat) => {
+      if (mat && mat.userData.baseEmissive == null) {
+        mat.userData.baseEmissive = mat.emissiveIntensity;
+      }
+    });
+    eventState.neonMats = stage.emissives;
     buildWeather(theme);
     clearEvent();
   }
@@ -1606,8 +1615,13 @@ export function createWorld(canvas) {
     hills.forEach((hill) => recycleZ(hill, move * 0.22, 90, 20));
     tickClouds(clouds, dt, speed, reduced);
 
-    tickWeather(dt, speed, reduced);
+    tickWeather(dt, speed, reduced, air);
     tickEvent(dt, speed, reduced);
+    if (!reduced) {
+      stage.spin.forEach((blades) => {
+        blades.rotation.z += dt * 0.7;
+      });
+    }
 
     const motes = car.userData.motes;
     if (motes) {
