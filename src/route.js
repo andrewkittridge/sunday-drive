@@ -501,6 +501,7 @@ function createWindmill() {
     blades.add(arm);
   }
   mill.add(blades);
+  mill.userData.blades = blades;
   return mill;
 }
 
@@ -606,12 +607,18 @@ function createLighthouse() {
   const stripe = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.32, 1.6, 8), lambert(0xa24b3a)));
   stripe.position.y = 4.4;
   light.add(stripe);
+  const lanternMat = new THREE.MeshLambertMaterial({
+    color: 0xffe7b8,
+    emissive: 0xffcc77,
+    emissiveIntensity: 0.8,
+  });
   const lantern = new THREE.Mesh(
     new THREE.CylinderGeometry(0.85, 0.9, 1.3, 8),
-    new THREE.MeshLambertMaterial({ color: 0xffe7b8, emissive: 0xffcc77, emissiveIntensity: 0.8 }),
+    lanternMat,
   );
   lantern.position.y = 8;
   light.add(lantern);
+  light.userData.emit = [lanternMat];
   const cap = addShadow(new THREE.Mesh(new THREE.ConeGeometry(1.15, 1.1, 8), lambert(0x3d2a22)));
   cap.position.y = 8.9;
   light.add(cap);
@@ -709,7 +716,14 @@ function createLandmark(kind) {
     group.add(mill);
     return group;
   }
-  if (kind === 'barns') return createBarn();
+  if (kind === 'barns') {
+    const group = new THREE.Group();
+    group.add(createBarn());
+    const silo = createSilo();
+    silo.position.set(4.6, 0, -1.2);
+    group.add(silo);
+    return group;
+  }
   if (kind === 'pond') return createPond();
   if (kind === 'diner') return createDiner();
   if (kind === 'lighthouse') return createLighthouse();
@@ -960,12 +974,15 @@ function createLampPost() {
   const post = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 3.2, 5), lambert(0x3a3834)));
   post.position.y = 1.6;
   lamp.add(post);
-  const bulb = new THREE.Mesh(
-    new THREE.SphereGeometry(0.16, 6, 5),
-    new THREE.MeshLambertMaterial({ color: 0xffe7b8, emissive: 0xffcc88, emissiveIntensity: 0.55 }),
-  );
+  const bulbMat = new THREE.MeshLambertMaterial({
+    color: 0xffe7b8,
+    emissive: 0xffcc88,
+    emissiveIntensity: 0.55,
+  });
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 6, 5), bulbMat);
   bulb.position.y = 3.25;
   lamp.add(bulb);
+  lamp.userData.emit = [bulbMat];
   return lamp;
 }
 
@@ -1026,6 +1043,7 @@ export function clearGroup(group) {
 
 // Road plane is 8.4 wide; dirt shoulders extend to about |x| = 6.1.
 const ROADSIDE_X = 6.7;
+const HERO_SLOT = { x: -18, z: -48, far: 170, near: 24 };
 
 function offRoadX(x, minAbs = ROADSIDE_X) {
   const sign = x < 0 ? -1 : 1;
@@ -1034,6 +1052,7 @@ function offRoadX(x, minAbs = ROADSIDE_X) {
 
 export function populateScenery(scenery, theme) {
   const movers = [];
+  const spin = [];
   function place(object, x, z, far = 170, near = 18, speed = 1, minAbsX = ROADSIDE_X) {
     object.position.x = offRoadX(x, minAbsX);
     object.position.z = z;
@@ -1100,15 +1119,6 @@ export function populateScenery(scenery, theme) {
     }
   }
 
-  if (theme.extras === 'pines') {
-    for (let i = 0; i < 4; i += 1) {
-      const rock = createRocks();
-      rock.scale.setScalar(0.38 + (i % 3) * 0.08);
-      const side = i % 2 === 0 ? -1 : 1;
-      place(rock, side * (15 + (i % 3) * 3), -120 + i * 28, 170, 20, 0.85);
-    }
-  }
-
   if (theme.extras === 'sage') {
     for (let i = 0; i < 8; i += 1) {
       const sage = createSage(theme.foliage[i % theme.foliage.length]);
@@ -1149,29 +1159,11 @@ export function populateScenery(scenery, theme) {
     place(sign, side * 7.05, -54 + i * 70, 170, 16);
   }
 
-  const landmarkA = createLandmark(theme.landmark);
-  landmarkA.position.set(-18, 0, -48);
-  scenery.add(landmarkA);
-  movers.push({ obj: landmarkA, far: 170, near: 24, speed: 1 });
+  const hero = createLandmark(theme.landmark);
+  place(hero, HERO_SLOT.x, HERO_SLOT.z, HERO_SLOT.far, HERO_SLOT.near);
+  hero.traverse((node) => {
+    if (node.userData && node.userData.blades) spin.push(node.userData.blades);
+  });
 
-  const landmarkB = createLandmark(theme.landmark);
-  landmarkB.position.set(32, 0, -128);
-  landmarkB.rotation.y = 0.45;
-  landmarkB.scale.setScalar(theme.landmark === 'lighthouse' || theme.landmark === 'mesa' ? 0.88 : 0.68);
-  scenery.add(landmarkB);
-  movers.push({ obj: landmarkB, far: 170, near: 24, speed: 1 });
-
-  if (theme.landmark === 'barns') {
-    const extra = createBarn();
-    extra.position.set(-28, 0, -128);
-    extra.rotation.y = -0.3;
-    scenery.add(extra);
-    movers.push({ obj: extra, far: 170, near: 24, speed: 1 });
-    const silo = createSilo();
-    silo.position.set(18, 0, -70);
-    scenery.add(silo);
-    movers.push({ obj: silo, far: 170, near: 24, speed: 1 });
-  }
-
-  return { movers, landmark: theme.landmark };
+  return { movers, landmark: theme.landmark, spin };
 }

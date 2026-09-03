@@ -153,6 +153,7 @@ function syncHud() {
   document.body.dataset.destination = game.destination.id;
   document.body.dataset.muted = String(game.muted);
   document.body.dataset.weather = world.getLook()?.weather || '';
+  document.body.style.setProperty('--air-night', String(world.getLook()?.night ?? 0));
 
   const ready = game.prestigeReady;
   els.prestige.disabled = !ready;
