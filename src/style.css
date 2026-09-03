@@ -122,11 +122,52 @@ input {
   text-shadow: 0 2px 14px rgba(20, 10, 4, 0.4);
 }
 
-.souvenir {
+.whispers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.souvenir,
+.company {
   margin: 0.15rem 0 0;
   font-size: 1rem;
   color: var(--ink-dim);
 }
+
+.company[hidden] {
+  display: none;
+}
+
+.company {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.company::before {
+  content: "";
+  flex: 0 0 auto;
+  height: 0.72rem;
+  width: calc(var(--cars, 1) * 0.98rem);
+  opacity: 0.75;
+  background-color: var(--ink-dim);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 18'%3E%3Cpath fill='%23000' d='M3 10.8 5.8 6.2h7.2l1.4 2.3H21v2.3H3z'/%3E%3Ccircle fill='%23000' cx='8' cy='13.3' r='2.2'/%3E%3Ccircle fill='%23000' cx='16.8' cy='13.3' r='2.2'/%3E%3C/svg%3E") repeat-x;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 18'%3E%3Cpath fill='%23000' d='M3 10.8 5.8 6.2h7.2l1.4 2.3H21v2.3H3z'/%3E%3Ccircle fill='%23000' cx='8' cy='13.3' r='2.2'/%3E%3Ccircle fill='%23000' cx='16.8' cy='13.3' r='2.2'/%3E%3C/svg%3E") repeat-x;
+  -webkit-mask-size: 0.98rem 0.72rem;
+          mask-size: 0.98rem 0.72rem;
+  pointer-events: none;
+}
+
+.company[data-glyphs="1"] { --cars: 1; }
+.company[data-glyphs="2"] { --cars: 2; }
+.company[data-glyphs="3"] { --cars: 3; }
+.company[data-glyphs="4"] { --cars: 4; }
+.company[data-glyphs="5"] { --cars: 5; }
 
 .top-actions {
   display: flex;
@@ -792,13 +833,17 @@ body.panel-open .panel {
     text-overflow: ellipsis;
   }
 
-  .souvenir {
+  .whispers {
     grid-area: souvenir;
+    max-width: 42vw;
+    align-self: center;
+  }
+
+  .souvenir,
+  .company {
     font-size: 0.92rem;
     margin: 0;
     text-align: right;
-    align-self: center;
-    max-width: 42vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1041,7 +1086,8 @@ body.panel-open .panel {
     font-size: clamp(1.9rem, 9vw, 2.7rem);
   }
 
-  .souvenir {
+  .souvenir,
+  .company {
     font-size: 0.9rem;
   }
 }
@@ -1111,6 +1157,14 @@ body.panel-open .panel {
 
   .souvenir {
     display: none;
+  }
+
+  .whispers {
+    display: flex;
+  }
+
+  .company {
+    font-size: 0.95rem;
   }
 
   .odometer {
@@ -1256,6 +1310,7 @@ body.large-type .unit {
 body.large-type .rate,
 body.large-type .trip,
 body.large-type .souvenir,
+body.large-type .company,
 body.large-type .hint,
 body.large-type .panel-lead,
 body.large-type .prestige-hint {
