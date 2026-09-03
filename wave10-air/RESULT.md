@@ -52,7 +52,7 @@ CONTRACT DECK wins over sketch cookie 7.4 / kiss 9.0. Live values are cookie wid
 `DECK.keyReach` is 58 from the sketch. CONTRACT's DECK list omitted it. Score still aims the key from the disc at that reach.
 Fog near, fog far, melt, and cloud Z live on `DECK` as CONTRACT listed them. Judge.md wanted those knobs off the clip-fix table. Honored CONTRACT.
 Cloud fade uses `abs(world.z)`, not camera distance.
-`createLandmark` is now exported from `route.js`. `createWorld` still does not export Air, DECK, or `cycleAt`.
+Lighthouse lanterns and lamp bulbs use `userData.emit` so Air can scale them without the neon event pulsing the whole town. Diner windows stay `userData.neon`. `createLandmark` stays private. `createWorld` still does not export Air, DECK, or `cycleAt`.
 
 ## Unfinished
 

@@ -551,7 +551,7 @@ function createLighthouse() {
   );
   lantern.position.y = 8;
   light.add(lantern);
-  light.userData.neon = [lanternMat];
+  light.userData.emit = [lanternMat];
   const cap = addShadow(new THREE.Mesh(new THREE.ConeGeometry(1.15, 1.1, 8), lambert(0x3d2a22)));
   cap.position.y = 8.9;
   light.add(cap);
@@ -632,7 +632,7 @@ function createChapel() {
   return group;
 }
 
-export function createLandmark(kind) {
+function createLandmark(kind) {
   if (kind === 'barn') {
     const group = new THREE.Group();
     group.add(createBarn());
@@ -911,7 +911,7 @@ function createLampPost() {
   const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 6, 5), bulbMat);
   bulb.position.y = 3.25;
   lamp.add(bulb);
-  lamp.userData.neon = [bulbMat];
+  lamp.userData.emit = [bulbMat];
   return lamp;
 }
 

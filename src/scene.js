@@ -1293,14 +1293,22 @@ export function createWorld(canvas) {
     side: THREE.DoubleSide,
   });
 
-  function gatherNeon(root) {
+  function gatherTagged(root, key) {
     const mats = [];
     root.traverse((node) => {
-      if (node.userData && Array.isArray(node.userData.neon)) {
-        mats.push(...node.userData.neon);
+      if (node.userData && Array.isArray(node.userData[key])) {
+        mats.push(...node.userData[key]);
       }
     });
     return mats;
+  }
+
+  function gatherNeon(root) {
+    return gatherTagged(root, 'neon');
+  }
+
+  function gatherEmit(root) {
+    return gatherTagged(root, 'emit');
   }
 
   function clearWeather() {
@@ -1565,13 +1573,12 @@ export function createWorld(canvas) {
     const built = populateScenery(scenery, theme);
     movers = built.movers;
     stage.spin = built.spin || [];
-    stage.emissives = gatherNeon(scenery);
+    stage.emissives = gatherEmit(scenery);
     stage.emissives.forEach((mat) => {
       if (mat && mat.userData.baseEmissive == null) {
         mat.userData.baseEmissive = mat.emissiveIntensity;
       }
     });
-    eventState.neonMats = stage.emissives;
     buildWeather(theme);
     clearEvent();
   }
