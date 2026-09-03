@@ -4,7 +4,8 @@ Draft only. Not merged. Not deployed to production.
 
 ## PR
 
-None. Branch `wave/10-cozy-air` off `main` @ `958547a`. Do not open a PR from this pass.
+https://github.com/andrewkittridge/sunday-drive/pull/13  
+Base: `main` after wave 9 and immersive wave 10. Head: `wave/10-cozy-air`.
 
 ## Thesis
 
