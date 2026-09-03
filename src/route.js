@@ -349,8 +349,8 @@ export function createRoundTree(color) {
   const foliage = addShadow(
     new THREE.Mesh(new THREE.SphereGeometry(0.95, 7, 6), lambert(color)),
   );
-  foliage.position.y = 1.45;
-  foliage.scale.set(1.1, 0.95, 1.1);
+  foliage.position.y = 1.32;
+  foliage.scale.set(1.35, 0.72, 1.2);
   tree.add(foliage);
 
   const canopy = addShadow(
@@ -845,80 +845,80 @@ export function createDeer() {
   });
   const hoofMat = lambert(0x1c1612);
 
-  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 1.14), hide));
-  body.position.set(0, 1.18, 0.04);
+  const body = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 1.05), hide));
+  body.position.set(0, 0.92, 0.06);
   deer.add(body);
 
-  const chest = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.28, 6, 5), hide));
-  chest.position.set(0, 1.12, -0.44);
-  chest.scale.set(0.74, 0.9, 1.08);
+  const chest = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.22, 7, 6), hide));
+  chest.position.set(0, 0.9, -0.42);
+  chest.scale.set(0.7, 0.82, 1.12);
   deer.add(chest);
 
-  const rump = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.3, 6, 5), hide));
-  rump.position.set(0, 1.2, 0.5);
-  rump.scale.set(0.82, 0.84, 0.98);
+  const rump = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.24, 7, 6), hide));
+  rump.position.set(0, 0.94, 0.48);
+  rump.scale.set(0.78, 0.8, 0.95);
   deer.add(rump);
 
-  const patch = new THREE.Mesh(new THREE.CircleGeometry(0.26, 10), cream);
-  patch.position.set(0, 1.26, 0.9);
+  const patch = new THREE.Mesh(new THREE.CircleGeometry(0.2, 10), cream);
+  patch.position.set(0, 1.02, 0.78);
   deer.add(patch);
-  const patchSide = new THREE.Mesh(new THREE.CircleGeometry(0.18, 8), cream);
-  patchSide.position.set(0.16, 1.24, 0.72);
+  const patchSide = new THREE.Mesh(new THREE.CircleGeometry(0.14, 8), cream);
+  patchSide.position.set(0.14, 0.98, 0.62);
   patchSide.rotation.y = 0.9;
   deer.add(patchSide);
 
-  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.26, 0.1), cream);
-  tail.position.set(0, 1.48, 0.92);
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.2, 0.08), cream);
+  tail.position.set(0, 1.16, 0.8);
   tail.rotation.x = 0.42;
   deer.add(tail);
 
   const headRig = new THREE.Group();
-  headRig.position.set(0, 1.22, -0.48);
+  headRig.position.set(0, 0.98, -0.44);
   deer.add(headRig);
 
-  const neck = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.15, 0.86, 5), hide));
-  neck.position.set(0, 0.34, -0.3);
-  neck.rotation.x = 0.58;
+  const neck = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.12, 0.62, 6), hide));
+  neck.position.set(0, 0.18, -0.22);
+  neck.rotation.x = 0.72;
   headRig.add(neck);
 
-  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.34), hideDark));
-  head.position.set(0, 0.7, -0.6);
+  const head = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, 0.3), hideDark));
+  head.position.set(0, 0.42, -0.52);
   headRig.add(head);
 
-  const snout = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.26), hideDark));
-  snout.position.set(0, 0.64, -0.82);
+  const snout = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.22), hideDark));
+  snout.position.set(0, 0.36, -0.72);
   headRig.add(snout);
 
-  const nose = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.055, 0.05), dark);
-  nose.position.set(0, 0.62, -0.96);
+  const nose = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.045, 0.04), dark);
+  nose.position.set(0, 0.34, -0.84);
   headRig.add(nose);
 
-  for (const x of [-0.11, 0.11]) {
-    const ear = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.28, 4), hide));
-    ear.position.set(x, 0.92, -0.48);
-    ear.rotation.x = -0.5;
-    ear.rotation.z = x > 0 ? 0.52 : -0.52;
+  for (const x of [-0.09, 0.09]) {
+    const ear = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.26, 4), hide));
+    ear.position.set(x, 0.62, -0.4);
+    ear.rotation.x = -0.42;
+    ear.rotation.z = x > 0 ? 0.48 : -0.48;
     headRig.add(ear);
   }
 
   for (const [x, z, rear] of [
-    [-0.12, -0.36, false],
-    [0.12, -0.36, false],
-    [-0.13, 0.46, true],
-    [0.13, 0.46, true],
+    [-0.1, -0.32, false],
+    [0.1, -0.32, false],
+    [-0.11, 0.42, true],
+    [0.11, 0.42, true],
   ]) {
-    const upper = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.54, 0.09), hideDark));
-    upper.position.set(x, 0.86, z);
-    upper.rotation.x = rear ? 0.14 : -0.1;
+    const upper = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.42, 0.06), hideDark));
+    upper.position.set(x, 0.68, z);
+    upper.rotation.x = rear ? 0.12 : -0.08;
     deer.add(upper);
 
-    const lowerZ = z + (rear ? 0.1 : -0.08);
-    const lower = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.5, 0.07), dark));
-    lower.position.set(x, 0.38, lowerZ);
+    const lowerZ = z + (rear ? 0.08 : -0.06);
+    const lower = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.38, 0.05), dark));
+    lower.position.set(x, 0.3, lowerZ);
     deer.add(lower);
 
-    const hoof = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.13), hoofMat);
-    hoof.position.set(x, 0.1, lowerZ + (rear ? 0.02 : -0.02));
+    const hoof = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.06, 0.1), hoofMat);
+    hoof.position.set(x, 0.08, lowerZ + (rear ? 0.02 : -0.02));
     deer.add(hoof);
   }
 
