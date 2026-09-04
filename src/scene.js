@@ -1379,7 +1379,7 @@ export function createWorld(canvas) {
     } else if (type === 'deer') {
       const deer = spawnProp('deer');
       const side = kind ? 1 : Math.random() > 0.5 ? 1 : -1;
-      deer.scale.setScalar(1.06);
+      deer.scale.setScalar(0.72);
       deer.position.set(side * 8.2, 0, -7.2);
       deer.rotation.y = side > 0 ? 0.28 : -0.28;
       if (deer.userData.head) deer.userData.head.rotation.y = -side * 0.32;

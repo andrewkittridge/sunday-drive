@@ -5,7 +5,7 @@
   "maxTriangles": 8000,
   "aabbMax": {
     "length": 8.5,
-    "width": 9.5,
+    "width": 10.5,
     "height": 7.5
   },
   "nodes": {

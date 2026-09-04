@@ -61,9 +61,12 @@ function convertMaterial(mat) {
       emissiveIntensity: mat.emissiveIntensity || (name === 'Mat_Lights' ? 0.35 : 0.4),
     });
   }
-  return new THREE.MeshLambertMaterial({
+  const shiny = name === 'Mat_Paint' || name === 'Mat_Roof' || name === 'Mat_Trim' || name === 'Mat_Sail';
+  return new THREE.MeshPhongMaterial({
     name,
     color,
+    shininess: shiny ? 28 : 12,
+    specular: shiny ? 0x6a5848 : 0x3a3228,
     emissive,
     emissiveIntensity: mat.emissiveIntensity || 0,
   });

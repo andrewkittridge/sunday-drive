@@ -42,7 +42,7 @@ const contracts = [
     materials: { bark: 'Mat_Bark', tint: 'Mat_Foliage' },
   }),
   kind('barn', {
-    aabbMax: { length: 8.5, width: 9.5, height: 7.5 },
+    aabbMax: { length: 8.5, width: 10.5, height: 7.5 },
     nodes: { root: 'Barn', required: ['Body', 'Roof_L', 'Roof_R', 'Door', 'Loft'] },
     materials: { paint: 'Mat_Paint', roof: 'Mat_Roof', trim: 'Mat_Trim' },
   }),
@@ -169,7 +169,7 @@ const contracts = [
     materials: { hide: 'Mat_Hide', dark: 'Mat_Dark', cream: 'Mat_Cream' },
   }),
   kind('neon', {
-    aabbMax: { length: 1.8, width: 2.4, height: 4.6 },
+    aabbMax: { length: 1.8, width: 2.8, height: 4.6 },
     nodes: { root: 'Neon', required: ['Post', 'Board', 'Script'] },
     materials: { post: 'Mat_Post', neon: ['Mat_Neon', 'Mat_Eat'] },
   }),
