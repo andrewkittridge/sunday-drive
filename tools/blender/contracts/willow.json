@@ -1,0 +1,24 @@
+{
+  "id": "willow",
+  "file": "willow.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 4.8,
+    "width": 4.8,
+    "height": 6.2
+  },
+  "nodes": {
+    "root": "Willow",
+    "required": [
+      "Trunk",
+      "Crown",
+      "Drape_L",
+      "Drape_R"
+    ]
+  },
+  "materials": {
+    "bark": "Mat_Bark",
+    "tint": "Mat_Foliage"
+  }
+}

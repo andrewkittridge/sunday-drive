@@ -1,0 +1,24 @@
+{
+  "id": "rocks",
+  "file": "rocks.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 10,
+    "width": 10,
+    "height": 5.5
+  },
+  "nodes": {
+    "root": "Rocks",
+    "required": [
+      "Boulder_A",
+      "Boulder_B",
+      "Boulder_C",
+      "Boulder_D"
+    ]
+  },
+  "materials": {
+    "stone": "Mat_Stone",
+    "lichen": "Mat_Lichen"
+  }
+}

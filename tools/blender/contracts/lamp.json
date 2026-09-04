@@ -1,0 +1,26 @@
+{
+  "id": "lamp",
+  "file": "lamp.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 1.8,
+    "width": 1.8,
+    "height": 4.2
+  },
+  "nodes": {
+    "root": "Lamp",
+    "required": [
+      "Post",
+      "Arm",
+      "Housing",
+      "Bulb"
+    ]
+  },
+  "materials": {
+    "iron": "Mat_Iron",
+    "emit": [
+      "Mat_Bulb"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "pine",
+  "file": "pine.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 4.5,
+    "width": 4.5,
+    "height": 8.5
+  },
+  "nodes": {
+    "root": "Pine",
+    "required": [
+      "Trunk",
+      "Bough_0",
+      "Bough_1",
+      "Bough_2",
+      "Bough_3"
+    ]
+  },
+  "materials": {
+    "bark": "Mat_Bark",
+    "tint": "Mat_Foliage"
+  }
+}

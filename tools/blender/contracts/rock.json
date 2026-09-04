@@ -1,0 +1,22 @@
+{
+  "id": "rock",
+  "file": "rock.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 2.2,
+    "width": 2.2,
+    "height": 1.6
+  },
+  "nodes": {
+    "root": "Rock",
+    "required": [
+      "Boulder",
+      "Chip"
+    ]
+  },
+  "materials": {
+    "stone": "Mat_Stone",
+    "moss": "Mat_Moss"
+  }
+}

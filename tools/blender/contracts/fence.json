@@ -1,0 +1,25 @@
+{
+  "id": "fence",
+  "file": "fence.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 12,
+    "width": 1.6,
+    "height": 2.2
+  },
+  "nodes": {
+    "root": "Fence",
+    "required": [
+      "Post_0",
+      "Post_1",
+      "Post_2",
+      "Rail_Lo",
+      "Rail_Hi"
+    ]
+  },
+  "materials": {
+    "post": "Mat_Post",
+    "rail": "Mat_Rail"
+  }
+}

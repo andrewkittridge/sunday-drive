@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:presence": "node scripts/verify-presence.mjs",
+    "test:props": "node scripts/verify-props.mjs",
     "props:forge": "node tools/blender/forge.mjs"
   },
   "dependencies": {

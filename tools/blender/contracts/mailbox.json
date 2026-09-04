@@ -1,0 +1,25 @@
+{
+  "id": "mailbox",
+  "file": "mailbox.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 1.8,
+    "width": 1.6,
+    "height": 2.2
+  },
+  "nodes": {
+    "root": "Mailbox",
+    "required": [
+      "Post",
+      "Box",
+      "Flag",
+      "Door"
+    ]
+  },
+  "materials": {
+    "post": "Mat_Post",
+    "box": "Mat_Box",
+    "flag": "Mat_Flag"
+  }
+}

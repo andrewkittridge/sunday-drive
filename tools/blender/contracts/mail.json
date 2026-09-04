@@ -1,0 +1,28 @@
+{
+  "id": "mail",
+  "file": "mail.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "forward": "-z",
+  "aabbMax": {
+    "length": 5.2,
+    "width": 2.6,
+    "height": 3.2
+  },
+  "nodes": {
+    "root": "Mail",
+    "required": [
+      "Body",
+      "Cab",
+      "Stripe",
+      "Glass",
+      "Bumper"
+    ],
+    "front": "Bumper"
+  },
+  "materials": {
+    "paint": "Mat_Paint",
+    "stripe": "Mat_Stripe",
+    "glass": "Mat_Glass"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "mesa",
+  "file": "mesa.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 16,
+    "width": 16,
+    "height": 7.5
+  },
+  "nodes": {
+    "root": "Mesa",
+    "required": [
+      "Butte",
+      "Caprock",
+      "Talus"
+    ]
+  },
+  "materials": {
+    "earth": "Mat_Earth",
+    "cap": "Mat_Cap",
+    "dust": "Mat_Dust"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "windmill",
+  "file": "windmill.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 5.5,
+    "width": 5.5,
+    "height": 9.5
+  },
+  "nodes": {
+    "root": "Windmill",
+    "required": [
+      "Tower",
+      "Nacelle",
+      "Tail",
+      "Blades"
+    ],
+    "blades": "Blades"
+  },
+  "materials": {
+    "wood": "Mat_Wood",
+    "sail": "Mat_Sail",
+    "iron": "Mat_Iron"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "hay",
+  "file": "hay.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 2.4,
+    "width": 2.4,
+    "height": 2.2
+  },
+  "nodes": {
+    "root": "Hay",
+    "required": [
+      "Bale",
+      "Twine_A",
+      "Twine_B"
+    ]
+  },
+  "materials": {
+    "straw": "Mat_Straw",
+    "twine": "Mat_Twine"
+  }
+}

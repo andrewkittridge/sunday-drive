@@ -1,0 +1,24 @@
+{
+  "id": "round",
+  "file": "round.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 4.5,
+    "width": 4.5,
+    "height": 5.5
+  },
+  "nodes": {
+    "root": "Round",
+    "required": [
+      "Trunk",
+      "Canopy",
+      "Canopy_A",
+      "Canopy_B"
+    ]
+  },
+  "materials": {
+    "bark": "Mat_Bark",
+    "tint": "Mat_Foliage"
+  }
+}
