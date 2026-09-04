@@ -1,0 +1,29 @@
+{
+  "id": "wagon",
+  "file": "wagon.glb",
+  "origin": "ground",
+  "forward": "-z",
+  "aabbMax": { "length": 5.6, "width": 2.3, "height": 2.2 },
+  "maxTriangles": 8000,
+  "nodes": {
+    "root": "Wagon",
+    "wheels": ["Wheel_FL", "Wheel_FR", "Wheel_RL", "Wheel_RR"],
+    "headlamps": ["Lamp_L", "Lamp_R"],
+    "tails": ["Tail_L", "Tail_R"],
+    "anchors": {
+      "spotL": "Anchor_Spot_L",
+      "spotR": "Anchor_Spot_R",
+      "kiss": "Anchor_Kiss",
+      "cabinFill": "Anchor_CabinFill",
+      "cabinGlow": "Anchor_CabinGlow",
+      "motes": "Anchor_Motes"
+    }
+  },
+  "materials": {
+    "lights": "Mat_Lights",
+    "tails": "Mat_Tails",
+    "glass": "Mat_Glass",
+    "wood": "Mat_Wood",
+    "body": "Mat_Body"
+  }
+}

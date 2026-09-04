@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:presence": "node scripts/verify-presence.mjs"
+    "test:presence": "node scripts/verify-presence.mjs",
+    "props:forge": "node tools/blender/forge.mjs"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.3",

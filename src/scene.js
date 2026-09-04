@@ -7,6 +7,7 @@ import {
   populateScenery,
   themeFor,
 } from './route.js';
+import { spawnWagon } from './props.js';
 
 // THREE.MathUtils.smoothstep is (x, min, max). Lighting wants GLSL-style
 // inverse: 0 when value >= high, 1 when value <= low.
@@ -676,84 +677,8 @@ function makeCloudNoise() {
 }
 
 function createCar() {
-  const car = new THREE.Group();
-  const paint = 0xf7ead2;
-  const bodyMat = new THREE.MeshPhongMaterial({
-    color: paint,
-    shininess: 38,
-    specular: 0x8a7a64,
-  });
-  const woodMat = new THREE.MeshPhongMaterial({
-    color: 0xffffff,
-    map: makeWoodTexture(),
-    shininess: 18,
-    specular: 0x6a4830,
-  });
-  const darkMat = new THREE.MeshLambertMaterial({ color: 0x2a2622 });
-  const chromeMat = new THREE.MeshPhongMaterial({
-    color: 0xe2ddd4,
-    shininess: 140,
-    specular: 0xc8c4ba,
-  });
-  const glassMat = new THREE.MeshPhongMaterial({
-    color: 0x5e6e6c,
-    shininess: 130,
-    specular: 0xd0dce0,
-    transparent: true,
-    opacity: 0.58,
-    emissive: 0x243038,
-    emissiveIntensity: 0.06,
-    depthWrite: false,
-  });
-  const rubberMat = new THREE.MeshLambertMaterial({ color: 0x1a1816 });
-  const interiorMat = new THREE.MeshLambertMaterial({
-    color: 0x4a382c,
-    emissive: 0x3a2418,
-    emissiveIntensity: 0.14,
-  });
-
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.5, 4.42), bodyMat);
-  body.position.y = 0.62;
-  body.castShadow = true;
-  car.add(body);
-
-  const skirt = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 4.32), darkMat);
-  skirt.position.y = 0.38;
-  car.add(skirt);
-
-  const hood = new THREE.Mesh(new THREE.BoxGeometry(1.74, 0.09, 1.48), bodyMat);
-  hood.position.set(0, 0.88, -1.38);
-  hood.rotation.x = 0.12;
-  hood.castShadow = true;
-  car.add(hood);
-
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.36, 2.42), bodyMat);
-  cabin.position.set(0, 1.02, 0.52);
-  cabin.castShadow = true;
-  car.add(cabin);
-
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(1.38, 0.055, 2.22), bodyMat);
-  roof.position.set(0, 1.24, 0.38);
-  roof.castShadow = true;
-  car.add(roof);
-
-  const dripL = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.18, 8), bodyMat);
-  dripL.rotation.x = Math.PI / 2;
-  dripL.position.set(-0.66, 1.24, 0.38);
-  car.add(dripL);
-  const dripR = dripL.clone();
-  dripR.position.x = 0.66;
-  car.add(dripR);
-
-  const rearSlope = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.055, 1.18), bodyMat);
-  rearSlope.position.set(0, 1.14, 1.62);
-  rearSlope.rotation.x = 0.46;
-  rearSlope.castShadow = true;
-  car.add(rearSlope);
-
-  const interior = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.32, 1.85), interiorMat);
-  interior.position.set(0, 0.94, 0.42);
-  car.add(interior);
+  const car = spawnWagon({ woodMap: makeWoodTexture() });
+  const anchors = car.userData.anchors || {};
 
   const cabinGlow = new THREE.Mesh(
     new THREE.PlaneGeometry(1.08, 0.34),
@@ -765,96 +690,25 @@ function createCar() {
       toneMapped: false,
     }),
   );
-  cabinGlow.position.set(0, 1.15, 2.132);
+  if (anchors.cabinGlow) cabinGlow.position.copy(anchors.cabinGlow.position);
+  else cabinGlow.position.set(0, 1.15, 2.132);
   car.add(cabinGlow);
 
   const cabinFill = new THREE.PointLight(0xffc090, 0.2, 2.35, 2);
-  cabinFill.position.set(0, 1.08, 0.4);
+  if (anchors.cabinFill) cabinFill.position.copy(anchors.cabinFill.position);
+  else cabinFill.position.set(0, 1.08, 0.4);
   car.add(cabinFill);
 
-  for (const x of [-0.52, 0.52]) {
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 1.95), chromeMat);
-    rail.position.set(x, 1.3, 0.32);
-    car.add(rail);
-  }
-  for (const z of [-0.5, 1.12]) {
-    const bar = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.03, 0.035), chromeMat);
-    bar.position.set(0, 1.3, z);
-    car.add(bar);
-  }
-
-  for (const side of [-1, 1]) {
-    const wood = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.58, 3.48), woodMat);
-    wood.position.set(side * 0.96, 0.74, 0.18);
-    wood.castShadow = true;
-    car.add(wood);
-    const chrome = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.035, 3.5), chromeMat);
-    chrome.position.set(side * 1.0, 1.04, 0.18);
-    car.add(chrome);
-    const chromeLow = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 3.5), chromeMat);
-    chromeLow.position.set(side * 1.0, 0.46, 0.18);
-    car.add(chromeLow);
-  }
-
-  const tailWood = new THREE.Mesh(new THREE.BoxGeometry(1.74, 0.82, 0.08), woodMat);
-  tailWood.position.set(0, 0.76, 2.22);
-  tailWood.castShadow = true;
-  car.add(tailWood);
-  const tailChrome = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.03, 0.04), chromeMat);
-  tailChrome.position.set(0, 1.16, 2.26);
-  car.add(tailChrome);
-
-  const windshield = new THREE.Mesh(new THREE.BoxGeometry(1.34, 0.38, 0.05), glassMat);
-  windshield.position.set(0, 1.08, -0.62);
-  windshield.rotation.x = -0.38;
-  car.add(windshield);
-
-  const rearGlass = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.4, 0.05), glassMat);
-  rearGlass.position.set(0, 1.08, 2.08);
-  rearGlass.rotation.x = 0.12;
-  car.add(rearGlass);
-  for (const x of [-0.66, 0.66]) {
-    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.46, 0.08), bodyMat);
-    pillar.position.set(x, 1.08, 2.1);
-    car.add(pillar);
-  }
-
-  for (const x of [-0.82, 0.82]) {
-    const side = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.34, 2.05), glassMat);
-    side.position.set(x, 1.14, 0.42);
-    car.add(side);
-  }
-
-  const bumperF = new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.16, 0.22), chromeMat);
-  bumperF.position.set(0, 0.44, -2.2);
-  car.add(bumperF);
-  const bumperB = bumperF.clone();
-  bumperB.position.z = 2.22;
-  car.add(bumperB);
-
-  const grille = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.26, 0.08), darkMat);
-  grille.position.set(0, 0.64, -2.18);
-  car.add(grille);
-  for (const x of [-0.28, -0.1, 0.1, 0.28]) {
-    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.22, 0.04), chromeMat);
-    bar.position.set(x, 0.64, -2.22);
-    car.add(bar);
-  }
-
-  const lightMat = new THREE.MeshLambertMaterial({
-    color: 0xffe7b8,
-    emissive: 0xffcc77,
-    emissiveIntensity: 0.35,
-  });
   const spots = [];
-  for (const x of [-0.62, 0.62]) {
-    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.1, 10), lightMat);
-    lamp.rotation.x = Math.PI / 2;
-    lamp.position.set(x, 0.66, -2.2);
-    car.add(lamp);
-
+  const lampAnchors = [anchors.spotL, anchors.spotR];
+  const fallbackX = [-0.62, 0.62];
+  for (let i = 0; i < 2; i += 1) {
+    const anchor = lampAnchors[i];
+    const x = anchor ? anchor.position.x : fallbackX[i];
+    const y = anchor ? anchor.position.y : 0.66;
+    const z = anchor ? anchor.position.z : -2.22;
     const spot = new THREE.SpotLight(0xffe4b0, 0, 12, 0.26, 0.92, 2);
-    spot.position.set(x, 0.66, -2.22);
+    spot.position.set(x, y, z);
     spot.target.position.set(x * 0.08, 0.06, -9.2);
     spot.castShadow = false;
     car.add(spot);
@@ -863,7 +717,8 @@ function createCar() {
   }
 
   const kiss = new THREE.PointLight(0xffd8a0, 0, DECK.kissDistance, DECK.kissDecay);
-  kiss.position.set(0, 0.2, -2.85);
+  if (anchors.kiss) kiss.position.copy(anchors.kiss.position);
+  else kiss.position.set(0, 0.2, -2.85);
   car.add(kiss);
 
   const cookieMat = makeCookieMaterial();
@@ -897,81 +752,6 @@ function createCar() {
   motes.frustumCulled = false;
   car.add(motes);
 
-  const amberMat = new THREE.MeshLambertMaterial({
-    color: 0xe8a04a,
-    emissive: 0xc47a20,
-    emissiveIntensity: 0.2,
-  });
-  for (const x of [-0.88, 0.88]) {
-    const marker = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.06), amberMat);
-    marker.position.set(x, 0.7, -2.14);
-    car.add(marker);
-  }
-
-  const tailMat = new THREE.MeshLambertMaterial({
-    color: 0xc45c2a,
-    emissive: 0x8a2a12,
-    emissiveIntensity: 0.25,
-  });
-  for (const x of [-0.78, 0.78]) {
-    const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.3, 0.08), chromeMat);
-    bezel.position.set(x, 0.74, 2.2);
-    car.add(bezel);
-    const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.24, 0.08), tailMat);
-    lamp.position.set(x, 0.74, 2.24);
-    car.add(lamp);
-  }
-
-  const plate = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.04), chromeMat);
-  plate.position.set(0, 0.46, 2.24);
-  car.add(plate);
-  const plateFace = new THREE.Mesh(
-    new THREE.BoxGeometry(0.46, 0.12, 0.02),
-    new THREE.MeshLambertMaterial({ color: 0xefe6d4 }),
-  );
-  plateFace.position.set(0, 0.46, 2.27);
-  car.add(plateFace);
-
-  for (const x of [-0.94, 0.94]) {
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.16), chromeMat);
-    arm.position.set(x, 1.08, -0.58);
-    car.add(arm);
-    const mirror = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.08), glassMat);
-    mirror.position.set(x * 1.08, 1.08, -0.64);
-    car.add(mirror);
-  }
-
-  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.78, 5), chromeMat);
-  antenna.position.set(-0.52, 1.68, 0.92);
-  antenna.rotation.z = 0.1;
-  car.add(antenna);
-
-  const wheels = [];
-  const wheelGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.26, 18);
-  const hubGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.28, 12);
-  const capGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.3, 10);
-  for (const [x, z] of [
-    [-0.94, -1.28],
-    [0.94, -1.28],
-    [-0.94, 1.32],
-    [0.94, 1.32],
-  ]) {
-    const wheel = new THREE.Mesh(wheelGeo, rubberMat);
-    wheel.rotation.z = Math.PI / 2;
-    wheel.position.set(x, 0.36, z);
-    wheel.castShadow = true;
-    car.add(wheel);
-    const hub = new THREE.Mesh(hubGeo, chromeMat);
-    hub.rotation.z = Math.PI / 2;
-    hub.position.set(x, 0.36, z);
-    car.add(hub);
-    const cap = new THREE.Mesh(capGeo, darkMat);
-    cap.rotation.z = Math.PI / 2;
-    cap.position.set(x, 0.36, z);
-    car.add(cap);
-    wheels.push(wheel);
-  }
-
   const shadow = new THREE.Mesh(
     new THREE.PlaneGeometry(3.85, 8.6),
     new THREE.MeshBasicMaterial({
@@ -986,13 +766,9 @@ function createCar() {
   car.add(shadow);
 
   car.position.set(0, DECK.restY, 1.6);
-  car.userData.wheels = wheels;
-  car.userData.lights = lightMat;
-  car.userData.tails = tailMat;
   car.userData.spots = spots;
   car.userData.kiss = kiss;
   car.userData.kissMesh = kissMesh;
-  car.userData.glass = glassMat;
   car.userData.cabinFill = cabinFill;
   car.userData.cabinGlow = cabinGlow;
   car.userData.motes = motes;
