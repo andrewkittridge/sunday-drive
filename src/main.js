@@ -12,6 +12,7 @@ import {
   parseSaveText,
 } from './game.js';
 import { startCompany } from './presence.js';
+import { prepareProps } from './props.js';
 import { createWorld } from './scene.js';
 
 const params = new URLSearchParams(window.location.search);
@@ -41,6 +42,7 @@ if (params.get('large') === '1') game.largeType = true;
 if (params.get('motion') === '0') game.reduceMotion = true;
 if (params.get('motion') === '1') game.reduceMotion = false;
 
+await prepareProps();
 const world = createWorld(document.getElementById('gl'));
 world.applyRoute(game.destination.id);
 if (params.has('phase')) {
