@@ -1,0 +1,25 @@
+{
+  "id": "silo",
+  "file": "silo.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 4.5,
+    "width": 4.5,
+    "height": 8.5
+  },
+  "nodes": {
+    "root": "Silo",
+    "required": [
+      "Drum",
+      "Hoop_A",
+      "Cap",
+      "Chute"
+    ]
+  },
+  "materials": {
+    "metal": "Mat_Metal",
+    "cap": "Mat_Cap",
+    "rust": "Mat_Rust"
+  }
+}

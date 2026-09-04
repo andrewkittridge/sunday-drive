@@ -1,0 +1,28 @@
+{
+  "id": "lighthouse",
+  "file": "lighthouse.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 6.5,
+    "width": 6.5,
+    "height": 12
+  },
+  "nodes": {
+    "root": "Lighthouse",
+    "required": [
+      "Base",
+      "Tower",
+      "Stripe",
+      "Lantern",
+      "Cap"
+    ]
+  },
+  "materials": {
+    "paint": "Mat_Paint",
+    "stripe": "Mat_Stripe",
+    "emit": [
+      "Mat_Lantern"
+    ]
+  }
+}

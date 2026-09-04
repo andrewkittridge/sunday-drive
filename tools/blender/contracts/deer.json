@@ -1,0 +1,26 @@
+{
+  "id": "deer",
+  "file": "deer.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 2.4,
+    "width": 1.4,
+    "height": 2.2
+  },
+  "nodes": {
+    "root": "Deer",
+    "required": [
+      "Body",
+      "Chest",
+      "Rump",
+      "Neck"
+    ],
+    "head": "Head"
+  },
+  "materials": {
+    "hide": "Mat_Hide",
+    "dark": "Mat_Dark",
+    "cream": "Mat_Cream"
+  }
+}

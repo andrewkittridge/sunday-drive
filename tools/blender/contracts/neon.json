@@ -1,0 +1,26 @@
+{
+  "id": "neon",
+  "file": "neon.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 1.8,
+    "width": 2.8,
+    "height": 4.6
+  },
+  "nodes": {
+    "root": "Neon",
+    "required": [
+      "Post",
+      "Board",
+      "Script"
+    ]
+  },
+  "materials": {
+    "post": "Mat_Post",
+    "neon": [
+      "Mat_Neon",
+      "Mat_Eat"
+    ]
+  }
+}

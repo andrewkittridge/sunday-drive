@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-09-04T12:54:54Z	frame	29 kinds from primitives to glTF, wagon already shipped	falsifiable bar is contract+spawn hooks on real GLBs, 8000 tri cap	plan.md criterion 1-4	framed
+2026-09-04T12:54:54Z	workflow	extend forge/contract/validate; one bpy lib; generate_prop registry; spawnProp catalog	plan already named the lever; architect skipped because the shape is concrete	tools/blender/forge.mjs tools/blender/validate-glb.mjs src/props.js	designed
+2026-09-04T12:54:54Z	workflow	architect skipped	mechanical migration onto an existing forge, not a one-way-door architecture fork	figure-it-out Phase B	skipped
+2026-09-04T13:10:45Z	harness	generalized validator (nodes, mats>=2, UVs, triangles, mesh AABB, ground origin)	wagon-only checks would miss the new kinds	tools/blender/validate-glb.mjs scripts/verify-props.mjs	tests green on wagon then all 29
+2026-09-04T13:10:45Z	lever	one bpy lib + generate_prop registry + contracts/*.json discovered by forge	hand-placing 29 meshes in Three is the thing we are deleting	tools/blender/lib.py tools/blender/generate_prop.py tools/blender/forge.mjs	29 GLBs in public/models
+2026-09-04T13:10:45Z	runtime	spawnProp catalog; deleted primitive create* from route.js and event spawns	migrate callers then delete the old mesh APIs in one wave	src/props.js src/prop-bind.js src/route.js src/scene.js	no Box/Sphere/Cylinder/Cone/Dodecahedron/CircleGeometry on those paths
+2026-09-04T13:10:45Z	verify	npm run test:props 29/29; npm run props:forge exit 0; two canvas launches 1280x800 no page errors	prove it on the real GLBs, real bind, real app	glb-test.log forge.log county-deer.png launch.log	VERIFIED
+2026-09-04T13:10:45Z	fix	split contract-shape.mjs after vite build pulled node:fs into the bundle	browser must not import the validator CLI	src/prop-bind.js tools/blender/contract-shape.mjs	vite build green

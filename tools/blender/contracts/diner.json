@@ -1,0 +1,29 @@
+{
+  "id": "diner",
+  "file": "diner.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 8.5,
+    "width": 10.5,
+    "height": 6.5
+  },
+  "nodes": {
+    "root": "Diner",
+    "required": [
+      "Body",
+      "Roof",
+      "Stripe",
+      "Window_0",
+      "Sign"
+    ]
+  },
+  "materials": {
+    "chrome": "Mat_Chrome",
+    "roof": "Mat_Roof",
+    "neon": [
+      "Mat_Neon",
+      "Mat_Window"
+    ]
+  }
+}

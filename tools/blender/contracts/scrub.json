@@ -1,0 +1,23 @@
+{
+  "id": "scrub",
+  "file": "scrub.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 3.8,
+    "width": 3.8,
+    "height": 2.8
+  },
+  "nodes": {
+    "root": "Scrub",
+    "required": [
+      "Lobe_A",
+      "Lobe_B",
+      "Lobe_C"
+    ]
+  },
+  "materials": {
+    "bark": "Mat_Bark",
+    "tint": "Mat_Foliage"
+  }
+}

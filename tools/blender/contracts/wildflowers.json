@@ -1,0 +1,24 @@
+{
+  "id": "wildflowers",
+  "file": "wildflowers.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 1.6,
+    "width": 1.6,
+    "height": 1.4
+  },
+  "nodes": {
+    "root": "Wildflowers",
+    "required": [
+      "Stem_0",
+      "Bloom_0",
+      "Stem_1",
+      "Bloom_1"
+    ]
+  },
+  "materials": {
+    "stem": "Mat_Stem",
+    "tint": "Mat_Bloom"
+  }
+}

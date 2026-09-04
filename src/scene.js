@@ -1,13 +1,6 @@
 import * as THREE from 'three';
-import {
-  clearGroup,
-  createDeer,
-  createMailTruck,
-  createNeonSign,
-  populateScenery,
-  themeFor,
-} from './route.js';
-import { spawnWagon } from './props.js';
+import { clearGroup, populateScenery, themeFor } from './route.js';
+import { spawnProp, spawnWagon } from './props.js';
 
 // THREE.MathUtils.smoothstep is (x, min, max). Lighting wants GLSL-style
 // inverse: 0 when value >= high, 1 when value <= low.
@@ -1377,16 +1370,16 @@ export function createWorld(canvas) {
     eventState.age = 0;
 
     if (type === 'mail') {
-      const truck = createMailTruck();
+      const truck = spawnProp('mail');
       truck.position.set(-2.45, 0.08, -22);
       truck.rotation.y = Math.PI;
       eventRoot.add(truck);
       eventState.truck = truck;
       eventState.life = 14;
     } else if (type === 'deer') {
-      const deer = createDeer();
+      const deer = spawnProp('deer');
       const side = kind ? 1 : Math.random() > 0.5 ? 1 : -1;
-      deer.scale.setScalar(1.06);
+      deer.scale.setScalar(0.72);
       deer.position.set(side * 8.2, 0, -7.2);
       deer.rotation.y = side > 0 ? 0.28 : -0.28;
       if (deer.userData.head) deer.userData.head.rotation.y = -side * 0.32;
@@ -1395,7 +1388,7 @@ export function createWorld(canvas) {
       eventState.deer = deer;
       eventState.life = 16;
     } else {
-      const sign = createNeonSign();
+      const sign = spawnProp('neon');
       const side = Math.random() > 0.45 ? 1 : -1;
       sign.position.set(side * 7.4, 0, -26);
       eventRoot.add(sign);

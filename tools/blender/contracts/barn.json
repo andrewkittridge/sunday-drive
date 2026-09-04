@@ -1,0 +1,26 @@
+{
+  "id": "barn",
+  "file": "barn.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 8.5,
+    "width": 10.5,
+    "height": 7.5
+  },
+  "nodes": {
+    "root": "Barn",
+    "required": [
+      "Body",
+      "Roof_L",
+      "Roof_R",
+      "Door",
+      "Loft"
+    ]
+  },
+  "materials": {
+    "paint": "Mat_Paint",
+    "roof": "Mat_Roof",
+    "trim": "Mat_Trim"
+  }
+}

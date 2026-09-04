@@ -1,0 +1,23 @@
+{
+  "id": "sign",
+  "file": "sign.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 1.4,
+    "width": 1.6,
+    "height": 2.6
+  },
+  "nodes": {
+    "root": "Sign",
+    "required": [
+      "Pole",
+      "Board",
+      "Bolt"
+    ]
+  },
+  "materials": {
+    "pole": "Mat_Pole",
+    "board": "Mat_Board"
+  }
+}

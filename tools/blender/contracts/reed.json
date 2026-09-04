@@ -1,0 +1,24 @@
+{
+  "id": "reed",
+  "file": "reed.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 2.2,
+    "width": 2.2,
+    "height": 2.6
+  },
+  "nodes": {
+    "root": "Reed",
+    "required": [
+      "Stem_0",
+      "Head_0",
+      "Stem_1",
+      "Head_1"
+    ]
+  },
+  "materials": {
+    "stem": "Mat_Stem",
+    "head": "Mat_Head"
+  }
+}

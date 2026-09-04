@@ -1,0 +1,23 @@
+{
+  "id": "sage",
+  "file": "sage.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 3.2,
+    "width": 3.2,
+    "height": 2.2
+  },
+  "nodes": {
+    "root": "Sage",
+    "required": [
+      "Clump_A",
+      "Clump_B",
+      "Clump_C"
+    ]
+  },
+  "materials": {
+    "bark": "Mat_Bark",
+    "tint": "Mat_Foliage"
+  }
+}

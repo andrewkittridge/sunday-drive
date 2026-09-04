@@ -1,0 +1,26 @@
+{
+  "id": "chapel",
+  "file": "chapel.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 8.5,
+    "width": 7.5,
+    "height": 9.5
+  },
+  "nodes": {
+    "root": "Chapel",
+    "required": [
+      "Nave",
+      "Roof",
+      "Door",
+      "Steeple",
+      "Spire"
+    ]
+  },
+  "materials": {
+    "paint": "Mat_Paint",
+    "roof": "Mat_Roof",
+    "trim": "Mat_Trim"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "dock",
+  "file": "dock.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 20,
+    "width": 20,
+    "height": 5.5
+  },
+  "nodes": {
+    "root": "Dock",
+    "required": [
+      "Water",
+      "Pier",
+      "Pile_0",
+      "Hull",
+      "House"
+    ]
+  },
+  "materials": {
+    "water": "Mat_Water",
+    "wood": "Mat_Wood",
+    "paint": "Mat_Paint"
+  }
+}

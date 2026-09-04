@@ -1,0 +1,23 @@
+{
+  "id": "tuft",
+  "file": "tuft.glb",
+  "origin": "ground",
+  "maxTriangles": 8000,
+  "aabbMax": {
+    "length": 1.4,
+    "width": 1.4,
+    "height": 1.4
+  },
+  "nodes": {
+    "root": "Tuft",
+    "required": [
+      "Blade_0",
+      "Blade_1",
+      "Blade_2"
+    ]
+  },
+  "materials": {
+    "tint": "Mat_Blade",
+    "tip": "Mat_Tip"
+  }
+}
